@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "Social_Ecological_Info_Cooperation"
+  site-url: "https://Akilan-R.github.io/Social_Ecological_Info_Cooperation"
+  description: "Test nbdev notebook"
+  repo-branch: main
+  repo-url: "https://github.com/Akilan-R/Social_Ecological_Info_Cooperation"
