@@ -172,7 +172,7 @@ X_for_state_set = mae.random_softmax_strategy()
 
 #Just to initialise a random startegy for the state set. This will be used to get the average policy for the given observation set
 
-print("X_for_State_set shape:", X_for_state_set.shape)
+
 
 # %% ../nbs/Partial_observabity_state_4_con.ipynb 11
 for mode in ['both_state_and_action_information','only_action_history_information', 'only_state_information','no_information', ]:
