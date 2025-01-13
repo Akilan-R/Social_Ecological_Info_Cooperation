@@ -83,6 +83,7 @@ def generate_state_observation_set(stateset, number_of_agents):
 
 
 # %% ../nbs/Partial_observabity_state_4_con.ipynb 9
+#informaion condition class
 class Information_Conditions(HistoryEmbedded):
     def __init__(self, ecopg , mode):
 
