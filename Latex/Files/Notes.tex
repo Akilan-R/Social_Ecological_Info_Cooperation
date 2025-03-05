@@ -1,0 +1,105 @@
+% !TEX root = ../../main.tex
+
+
+\section{Notes}
+
+
+\subsection{Basic Terminologies}
+
+$X$ - behavioral profile that tells you how the probability of "joint action" X, where X is a matrix of size N*M*Z. 
+
+(n \rightarrow no. of agents, m \rightarrow different possible actions, z \rightarrow number of states) 
+
+$T_{sas'}$ will tell you the probability of state change for every possible joint action.
+
+$R$ gives reward for each agent - given joint action, given transition from state s to s'.
+
+\subsection{Temporal Difference Limit}
+
+How does learning work?  Learning can be understood as a combination of interaction + adaptation.
+
+X (behavior profile) specifies what actions the agent takes given the current environmental state. X is derived as a softmax on different stae-teaction values using (although greedy, epsilon-greedy is also possible)
+
+Based on X, the agents act and obtain a reward. Based on this reward and the evaluation of the next state, the current value (or state-action value) is updated.  (TD update)
+
+\begin{equation}
+\tilde{Q}_{sa}^i(t+1) = \tilde{Q}_{sa}^i(t) + \alpha^i D_{sa}^i(t),
+\end{equation}
+
+
+
+
+\begin{equation}
+D_{sa}^i(t) = \delta_{ss(t)} \delta_{aa(t)} 
+\left[
+    \underbrace{(1 - \gamma^i) R_{s(t)a(t)a^{-i(t)}s(t+1)}^i + \gamma^i \, \gamma_{s(t+1)}^i (t)}_{\text{estimate from new experience}} 
+    - \underbrace{\gamma_{s(t)}^i (t)}_{\text{old estimate}}
+\right].
+\end{equation}
+
+
+
+
+The $X_{t+1}$ is calculated based on the new state action value, once again as a soft max where the action with the highest value is most probable for it to be paid. 
+
+The environment changes according to the transition with a certain probability depending on the current state and what joint action was taken, according to tensor $T$ of shape [s,a1,a2....an, s']
+
+Generally it is one step adaptation, one step interaction and the cycle continues. Instead one can follow "batch learning" - agents interact for a number of time steps; batch size is the number of times each state is visited. So the update happens according to average reward the agent gets in that particular state.
+
+Deterministic Limit to reinforcement learning:  
+
+QW assume that the update happens after infinite time steps of interaction with the environment. (Separation of time scales).
+
+This will give rise to a deterministic function . $X_{t+1} = F(x_t)$. F is the update function after infinite interaction.  Now, with this deterministic map all NLD analysis can be performed
+
+The sample batch with batch size infinity converges to the deterministic learning algorithm. This can be transformed to take a form of learning with memory (I don't understand the details)
+
+
+\subsection{Types of Learning}
+
+Q-Learning: The value of a state $\gamma$ is ($\max_a(Q_{sa})$)
+irrespective of what you play. This is estimated using the Bellman error\\
+
+SARSA Learning:  The value of a state $\gamma$  is  $Q_{sa}$), which is the state-value with the action that was played
+
+In Q and SARSA :- $\gamma$ is dervied from $Q$
+\\
+AC Learning: 
+
+$\gamma$ has its own approximation and temporal difference update. $Q$ function is considered to be the "actor" which gets criticised by $\gamma$ the critic
+
+
+\subsection{Cognitive Analysis}
+
+\paragraph{Marr's levels of Analysis}
+
+Computational level > Algorithmic level > Implementation level
+
+A cognitive system can be studied as having these three levels: 
+
+The compuatational level : what problem is being solved. 
+Algorithmic level: how the problem is being solved
+Implementation level: the physical entity which implements the algorithm (ex: the brain)
+
+Test 5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

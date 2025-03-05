@@ -1,0 +1,74 @@
+% !TeX root = main.tex
+
+
+\documentclass[a4paper, 12pt, colorlinks=true, linkcolor=black, urlcolor=blue, citecolor=blue, hidelinks]{article}
+\usepackage{xcolor}
+
+\usepackage[a-1b]{pdfx}
+
+\usepackage[english]{babel} % Language
+%Font
+% \usepackage{fontspec}
+\usepackage{comment}
+
+\begin{comment}
+    add a specific font here
+    \setmainfont{MiloTE}[
+      Path = ./Resources/Font/,
+      Extension = .ttf,
+      BoldFont = MiloTE-Bold,
+      ItalicFont = MiloTE-Ita,
+    ]
+\end{comment}
+
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{csquotes}
+% margins
+\geometry{a4paper,inner=4cm,outer=3cm,top=3cm,bottom=2.5cm}
+
+%\usepackage[hang,flushmargin]{footmisc} % Removes footnote indentation
+%\usepackage{enumitem} % Removes bulletin indentation
+%\catcode`\_=12 % change catcode of "_" to "other" 
+
+\usepackage{float} % Required for the [H] option
+\usepackage{caption}
+%\captionsetup[figure]{font=small,labelfont=small}
+
+\usepackage{setspace}
+\setstretch{1.5} % Interlinea
+% Rientro dei paragrafi
+\setlength{\parindent}{20pt}
+%Bibliografia
+\usepackage[backend=biber, style=numeric, sorting=none]{biblatex}
+%\addbibresource{bibliography.bib} % Add bibliography
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+\usepackage{fontspec}
+\begin{document}
+\pagenumbering{roman}
+
+% \input{Tesi/Frontespizio}
+\tableofcontents % Table of contents
+\newpage
+% \input{Tesi/Sommario} % Abstract
+\newpage
+\pagenumbering{arabic}
+
+\setcounter{page}{1}
+\input{Files/Notes.tex} % Introduction
+
+% \input{Tesi/Methods} % Methods
+
+% \input{Tesi/Results} % Results
+
+% \input{Tesi/Conclusioni} % Conclusions
+
+% \input{Tesi/Notes}
+
+
+%\printbibliography[heading=bibintoc, title={Bibliography}]
+\end{document}
+
