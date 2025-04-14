@@ -1,9 +1,0 @@
-project:
-  output-dir: _docs
-
-website:
-  title: "Social_Ecological_Info_Cooperation"
-  site-url: "https://Akilan-R.github.io/Social_Ecological_Info_Cooperation"
-  description: "Social-Ecological-Information-Cooperation"
-  repo-branch: main
-  repo-url: "https://github.com/Akilan-R/Social_Ecological_Info_Cooperation"
