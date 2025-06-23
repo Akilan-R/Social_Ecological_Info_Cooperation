@@ -8,8 +8,6 @@ from helper_functions import *
 from simulation_and_results_functions import *
 
 
-# %%
-np.set_printoptions(precision=3, suppress=True)
 
 # %% [markdown]
 # 1. No information: all defect with some margin of error
@@ -29,10 +27,9 @@ if __name__ == "__main__":
     result_list = run_simulation_across_conditions_parallel(
         mae = mae_ecopg, 
         mode = mode,
-        num_samples = 50, 
+        num_samples = 100, 
         exclude_degraded_state_for_average_cooperation = False
     )
 
-    print()
     make_plots_only_final_point(information_condition_instance, mae_ecopg, result_list)
 

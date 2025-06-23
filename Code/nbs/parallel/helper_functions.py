@@ -101,12 +101,7 @@ def exclude_degraded_states_from_obsdist(obsdist, Oset):
 
 # %%
 
-def get_average_cooperativeness(policy, obsdist, mode, Oset, exclude_degraded_state_for_average_cooperation):
-    
-    if exclude_degraded_state_for_average_cooperation:
-        if mode == 'only_state_information' or mode == 'both_state_and_action_information':
-            obsdist = exclude_degraded_states_from_obsdist(obsdist, Oset)
-
+def get_average_cooperativeness(policy, obsdist):
         
     policy_cooperation_probabilities = policy[:,:, 0]
     agent_index, state_index = [0, 1]
@@ -140,20 +135,38 @@ def get_unique_arrays(list_of_arrays):
 
 # %% 
 
-def enumerate_strategies_frequency(list_of_final_points):
+# def create_strategy_frequncy_table(list_of_final_points):
 
-    strategy_shape = list_of_final_points[0].shape
-    total_number_of_strategies = len(list_of_final_points)
+#     strategy_shape = list_of_final_points[0].shape
+#     total_number_of_strategies = len(list_of_final_points)
 
-    flattened_strategies = [tuple(point.flatten()) for point in list_of_final_points]
-    #flatten and make it to tuple, otherwise np.unqiue will do element wise
-    unique_strategies, counts = np.unique(flattened_strategies, axis = 0, return_counts=True)
-    #axis = 0 so that we are looking for unique rows (Hhere tuples rather than)
-    # formatted_strategies = [np.array2string(np.array(strategy).reshape(strategy_shape), max_line_width = np.inf) for strategy in unique_strategies]
-    strategy_frequencies = pd.DataFrame([{'strategy': strategy.reshape(strategy_shape), 'frequency': (count/total_number_of_strategies)*100} for strategy, count in zip(unique_strategies, counts)])
-    #reshape, then array2string to make it human readable, then dataframe for better visualization
-    return strategy_frequencies
+#     flattened_strategies = [tuple(point.flatten()) for point in list_of_final_points]
+#     unique_strategies, counts = np.unique(flattened_strategies, axis = 0, return_counts=True)
+   
+#     strategy_frequencies = pd.DataFrame([{'strategy': strategy.reshape(strategy_shape), 'frequency': (count/total_number_of_strategies)*100} for strategy, count in zip(unique_strategies, counts)])
+#     strategy_frequencies = strategy_frequencies.sort_values(by='frequency', ascending=False).reset_index(drop=True)
+
+#     return strategy_frequencies
+
+def create_strategy_frequncy_table(results_list_flattened_final_point, strategy_shape):
+
+    total_number_of_strategies = len(results_list_flattened_final_point)
+    dataframe =  pd.DataFrame(results_list_flattened_final_point)
+
+    grouped_df = dataframe.groupby('final_point').agg(
+        avg_coop =  ('avg_coop', 'mean'),
+        avg_obsdist = ('obsdist', lambda x: np.mean(np.stack(x), axis= 0)),
+        frequency = ('final_point', lambda x: np.round(len(x)/total_number_of_strategies* 100, 2))
+        ).reset_index()
+    sorted_df = grouped_df.sort_values(by = 'frequency', ascending=False ).reset_index(drop = True)
+    sorted_df['final_point'] = sorted_df['final_point'].apply(lambda x: np.array(x).reshape(strategy_shape)).reset_index(drop = True)
     
+    dataframe['final_point'] = dataframe['final_point'].apply(lambda x: np.array(x).reshape(strategy_shape)).reset_index(drop = True)
+    return sorted_df, dataframe
+# %%
 
-
-
+all_information_modes = [
+        "only_action_history_information",
+            "only_state_information",
+            "both_state_and_action_information",
+            "no_information"]

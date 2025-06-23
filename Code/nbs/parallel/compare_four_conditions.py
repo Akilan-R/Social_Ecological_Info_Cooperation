@@ -15,7 +15,8 @@ all_information_modes = [
 
 # %%
 
-def compare_conditions_cooperation_basin_size(num_samples= 1000, degraded_choice = False, m_value = -6, discount_factor = 0.98, exclude_degraded_state_for_average_cooperation = True , information_modes = all_information_modes):
+def compare_conditions_cooperation_basin_size(num_samples= 250, degraded_choice = False, m_value = -6, discount_factor = 0.98, make_degraded_state_cooperation_probablity_zero_at_end= True,
+            make_degraded_state_obsdist_zero_at_end= True , information_modes = all_information_modes):
     """
     Runs simulations for different information conditions and outputs 
     the results for each condition.
@@ -40,17 +41,17 @@ def compare_conditions_cooperation_basin_size(num_samples= 1000, degraded_choice
     for mode in information_modes:
         # Initialize the information condition
         information_condition_instance = Information_Conditions(ecopg, mode=mode)
-        mae = POstratAC_eps(env=information_condition_instance, learning_rates=0.01, discount_factors= discount_factor)
+        mae_ecopg = POstratAC_eps(env=information_condition_instance, learning_rates=0.01, discount_factors= discount_factor)
 
         # Data storage
 
         # print(f"\nMode: {mode}")
 
         avg_coop_time_pairs = run_simulation_across_conditions_parallel(
-            mae = mae, 
-            mode = mode,
-            num_samples = num_samples, 
-            exclude_degraded_state_for_average_cooperation = exclude_degraded_state_for_average_cooperation
+            mae = mae_ecopg, 
+            num_samples = num_samples,
+            make_degraded_state_cooperation_probablity_zero_at_end = make_degraded_state_cooperation_probablity_zero_at_end,
+            make_degraded_state_obsdist_zero_at_end = make_degraded_state_obsdist_zero_at_end
         )
 
         cooperation_basin_size = get_results_only_cooperation_basin_of_attraction_size(avg_coop_time_pairs)

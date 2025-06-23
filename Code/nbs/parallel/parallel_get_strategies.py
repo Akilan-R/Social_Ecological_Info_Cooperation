@@ -18,29 +18,37 @@ np.set_printoptions(precision=3, suppress=True)
 # 4. Both ecological and 
 
 # %%
-mode = "only_action_history_information"
-
-ecopg = BaseEcologicalPublicGood()
-information_condition_instance = Information_Conditions(ecopg, mode= mode)
-mae_ecopg = POstratAC_eps(env=information_condition_instance, learning_rates=0.05, discount_factors= 0.98)
 
 if __name__ == "__main__":
 
-    result_list = run_simulation_across_conditions_parallel(
-        mae = mae_ecopg, 
-        mode = mode,
-        num_samples = 25, 
-        exclude_degraded_state_for_average_cooperation = False
-    )
+    for mode in all_information_modes:
+        ecopg = BaseEcologicalPublicGood()
+        information_condition_instance = Information_Conditions(ecopg, mode= mode)
+        mae_ecopg = POstratAC(env=information_condition_instance, learning_rates=0.05, discount_factors= 0.98)
+ 
+        print("Running simulation with mode:", mode)
 
-    final_point_test = result_list[0]['final_point']
+        result_list = run_simulation_across_conditions_parallel(
+            mae = mae_ecopg, 
+            num_samples = 1000,
+            make_degraded_state_cooperation_probablity_zero_at_end= True,
+            make_degraded_state_obsdist_zero_at_end= True
+        )
+        strategy_shape = result_list[0]['final_point'].shape
+        result_list_with_degraded_zero_and_flattened_list = [
+            {'final_point': tuple(np.round(results['final_point'], 1).flatten()),
+                'avg_coop': float(np.round(float(results['avg_coop']), 2)),
+                 'obsdist': np.round(results['obsdist'],2)
+            } 
+            for results in result_list]
+        
+        # list_of_avg_coop = [float(np.round(float(result['avg_coop']),2)) for result in result_list]
+        
+        unique_strategies_and_frequency_df, original_dataframe = create_strategy_frequncy_table(result_list_with_degraded_zero_and_flattened_list, strategy_shape)
 
-    strategy_list_degraded_zero = [np.round(make_degraded_state_cooperation_probablity_zero(result['final_point'], information_condition_instance.Oset[0]),2) for result in result_list]
-
-    list_of_avg_coop = [float(np.round(float(result['avg_coop']),2)) for result in result_list]
+        filename = f"{mode}_unique_strategies_and_frequency.xlsx"
+        unique_strategies_and_frequency_df.to_excel(filename, index=False)  
 
     
 
-    unique_strategies_and_frequency = enumerate_strategies_frequency(strategy_list_degraded_zero)
-    unique_strategies_and_frequency.to_csv('only_action_unique_strategies_and_frequency.csv', index=False)
 
