@@ -166,7 +166,171 @@ def create_strategy_frequncy_table(results_list_flattened_final_point, strategy_
 # %%
 
 all_information_modes = [
+        "both_state_and_action_information",
         "only_action_history_information",
             "only_state_information",
-            "both_state_and_action_information",
             "no_information"]
+
+# %%
+
+def classify_strategy(strategy):
+
+    # print(strategy)
+    if len(strategy) == 8:
+        strategy = strategy[1::2]
+
+    classification = None
+
+    Oset = np.array(['c,c', 'c,d', 'd,c', 'd,d'])
+
+    if np.all(strategy >= 0.9):
+        classification = 'ALL C'
+
+    elif (np.all(strategy) > 0.5) and (np.any(strategy) < 0.9):
+        classification = 'Mostly C'
+
+    elif np.all((strategy[np.isin(Oset, ['c,c', 'd,d'])]) >= 0.9) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c'])]) <= 0.1):
+        classification = 'WSLS'
+
+    elif np.all((strategy[np.isin(Oset, ['c,c'])]) >= 0.9) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c', 'd,d'])]) <= 0.1):
+        classification = 'GT'
+    
+    elif np.all(strategy <= 0.1):
+        classification = 'ALL D'
+    
+    elif np.all((strategy[np.isin(Oset, ['d,d'])]) >= 0.9) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c', 'c,c'])]) <= 0.1):
+        classification = 'Reverse GT'
+    
+    # elif (np.all(strategy) < 0.5) and (np.any(strategy) > 0.05):
+    #     classification = 'Mostly D'
+ 
+    else:
+        classification = "other"
+
+    return classification
+
+def classify_final_point(final_point):
+    final_point_only_coop = final_point[:,:,0]
+    agent_1_strategy, agent_2_strategy = final_point_only_coop[0, :], final_point_only_coop[1, :]
+    agent_1_classification, agent_2_classification = classify_strategy(agent_1_strategy), classify_strategy(agent_2_strategy)
+
+    return (agent_1_classification, agent_2_classification)
+#%%
+
+def add_random_degraded_state_policy(starting_point):
+     for i in [0, 2, 4, 6]:
+        random_block = np.random.rand(2)
+        stacked_random_block = np.stack([random_block, 1-random_block],axis = -1)
+        starting_point = np.insert(starting_point, i, stacked_random_block, axis = 1)
+
+     return starting_point
+
+#%%
+
+def generate_random_initial_conditions_around_point(mae, test_point, num_samples, perturbation_size, mode):
+    random_initial_conditions = lhs_sampling(mae.Q, num_samples, mae.N)
+    if mode == 'both_state_and_action_information' or  mode == 'only_state_information':
+        random_initial_conditions_around_point = [(add_random_degraded_state_policy(test_point) + perturbation_size*sample)/(1 + perturbation_size) for sample in random_initial_conditions]
+    if mode ==  'no_information' or  mode == 'only_action_history_information':
+        random_initial_conditions_around_point = [(test_point + perturbation_size*sample)/(1 + perturbation_size) for sample in random_initial_conditions]
+    return random_initial_conditions_around_point
+
+
+#%%
+def make_barplots_for_cooperate_basin_size(basin_of_attraction_cooperation_results_each_mode):
+
+
+        cooperation_basin_size = [(basin_of_attraction_cooperation_results_each_mode[condition]) for condition in all_information_modes]
+
+        print(cooperation_basin_size)
+
+        conditions = [
+                "Both Social and Ecological State Information", 
+                "Only Social Information", 
+                "Only Ecological State Information", 
+                "No Information"
+            ]
+
+        # Create DataFrame for plotting
+        plot_df = pd.DataFrame({
+            'Information Condition': conditions,
+            'Cooperation Basin Size': cooperation_basin_size
+        })
+
+        # Define a color palette
+        color_map = {
+            "Both Social and Ecological State Information": "#4c72b0",  # Muted Blue
+            "Only Social Information": "#FFB6C1",  # Muted Pink
+            "Only Ecological State Information": "#55a868",  # Muted Green
+            "No Information": "#000000"  # Black
+        }
+
+        # Create figure
+        fig = go.Figure()
+
+        for i, row in plot_df.iterrows():
+            condition = row['Information Condition']
+            percentage = row['Cooperation Basin Size']
+            color = color_map[condition]
+            
+            if percentage == 0:
+                # 1. Actual outline bars for zero values (shown in the plot)
+                fig.add_trace(go.Bar(
+                    x=[condition], 
+                    y=[percentage], 
+                    marker=dict(color='rgba(0,0,0,0)', line=dict(color=color, width=4)),
+                    text=f"{float(percentage):.1f}%",
+                    textposition='outside',
+                    textfont=dict(size=15, color='black'),  # Larger, darker percentage text
+                    showlegend=False,  # Don't show this in the legend
+                    legendgroup=condition  # Group legend with the solid bar
+                ))
+
+                # 2. Hidden solid legend bar (only for legend display)
+                fig.add_trace(go.Bar(
+                    x=[None],  # Invisible bar in the plot
+                    y=[None],
+                    name=condition,
+                    marker=dict(color=color),  # Filled marker for the legend
+                    legendgroup=condition  # Matches legend with outline bar
+                ))
+
+            else:
+                # Normal filled bars
+                fig.add_trace(go.Bar(
+                    x=[condition], 
+                    y=[percentage], 
+                    name=condition,
+                    marker=dict(color=color),
+                    text=f"{float(percentage):.1f}%",
+                    textposition='outside',
+                    textfont=dict(size=15, color='black')  # Larger, darker percentage text
+                ))
+
+        # Update layout for aesthetics
+        fig.update_layout(
+            yaxis_title="Cooperation Basin Size (%)",
+            yaxis=dict(
+                range=[0, 100],
+                tickfont=dict(size=18)  # Larger, darker y-axis label
+            ),
+            xaxis=dict(title='', showticklabels=False),
+            plot_bgcolor='snow',  # Clean background
+            width=500,
+            height=675,
+            bargap=0,  # Minimize gaps
+            legend=dict(
+                title="",
+                orientation="h",
+                yanchor="bottom",
+                y=-0.3,
+                xanchor="center",
+                x=0.5,
+            font=dict(size=13.5, color='black')
+            )
+        )
+
+        # Show figure
+        fig.show()
+
+

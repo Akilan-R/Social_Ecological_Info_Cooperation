@@ -224,7 +224,7 @@ def make_plots(information_condition_instance, mae, result_list):
         fp.plot_trajectories([xtraj], x, y, cols=['grey'], lss = "--", axes = ax)
 
         for plot_index, (x_indices,y_indicies) in enumerate(zip(it.product(*x), it.product(*y))):
-            ax[plot_index].scatter(final_point[x_indices],final_point[y_indicies], color = 'red')
+            ax[plot_index].scatter(final_point[x_indices],final_point[y_indicies], color = 'red', s = 35, alpha = 0.7)
 
 
 # %%
@@ -250,3 +250,111 @@ def make_plots_only_final_point(information_condition_instance, mae, result_list
             ax[plot_index].scatter(final_point[x_indices],final_point[y_indicies], color = 'red', alpha = 0.7)
         
         plt.show()
+
+# %%
+def run_simulation_for_initial_condition_with_traj(initial_condition, mae,
+                                         make_degraded_state_cooperation_probablity_zero_at_end, make_degraded_state_obsdist_zero_at_end):
+
+
+    xtraj, fixedpointreached = mae.trajectory(initial_condition, Tmax= 100000, tolerance=1e-5)
+    # xtraj, fixedpointreached = mae.trajectory(initial_condition, Tmax=50000, tolerance=1e-25)
+    # if fixedpointreached == False:
+    #     print("Warning: Fixed point not reached within 50000 iterations", np.round(initial_condition,3), mode)
+        
+    final_point = xtraj[-1]
+    obsdist = mae.obsdist(final_point)
+
+   
+    if make_degraded_state_cooperation_probablity_zero_at_end:  final_point = make_degraded_state_cooperation_probablity_zero(final_point, mae.env.Oset[0])
+    if make_degraded_state_obsdist_zero_at_end: obsdist = exclude_degraded_states_from_obsdist(obsdist, mae.env.Oset[0])
+
+    #IMP! Only excluded degraded states from obsdist and final point at the end of simulation for reporting values.
+        #  No interference while simulations are running.
+    
+
+    avg_coop_across_states_each_agent = get_average_cooperativeness(
+        policy=final_point, 
+        obsdist= obsdist
+    ) #we're only considiering agent i
+
+    avg_coop_across_states_across_agents = np.mean(avg_coop_across_states_each_agent)  #average cooperation between agents. Alternatively, one could just take the cooperatoin of the first agent.
+    time_to_reach = xtraj.shape[0]
+
+    results_dict = {
+        'avg_coop': avg_coop_across_states_across_agents,
+        'time_to_reach': time_to_reach,
+        'xtraj': xtraj,            #xtraj is large, so we don't want to store it esp when parallel processing is odne
+        'final_point': final_point,
+         'obsdist': obsdist,
+    }
+
+    return results_dict
+
+
+# %%
+
+
+def run_simulation_across_conditions_with_traj(mae, num_samples, 
+                                      make_degraded_state_cooperation_probablity_zero_at_end, make_degraded_state_obsdist_zero_at_end):
+    """
+    Runs Monte Carlo simulations across multiple initial conditions.
+
+    Parameters:
+        mae: The POstratAC instance (learning agent).
+        information_condition_instance: The instance of Information_Conditions.
+        num_samples (int): Number of initial conditions to sample.
+        initial_cooperation_in_degraded_state (int): If 0, cooperation in degraded state is set to zero;
+                                                     if 1, it is set to one; otherwise, no changes.
+        include_degraded_state_for_average_cooperation (bool): Whether to include the degraded state in average cooperation.
+
+    Returns:
+        list: A list of (average cooperation, time-to-reach) tuples.
+    """
+    result_tuple_list = []
+    initial_conditions_list = lhs_sampling(mae.Q, num_samples, mae.N)
+
+    for initial_condition in initial_conditions_list:
+        result = run_simulation_for_initial_condition_with_traj(
+            initial_condition = initial_condition,
+            mae = mae,
+            make_degraded_state_cooperation_probablity_zero_at_end = make_degraded_state_cooperation_probablity_zero_at_end,
+            make_degraded_state_obsdist_zero_at_end =  make_degraded_state_obsdist_zero_at_end
+        )
+        result_tuple_list.append(result)
+
+    return result_tuple_list
+
+# %%
+
+def compare_conditions_cooperation_basin_size(num_samples= 200, degraded_choice = False, m_value = -6, discount_factor = 0.98, make_degraded_state_cooperation_probablity_zero_at_end= True,
+            make_degraded_state_obsdist_zero_at_end= True , information_modes = all_information_modes):
+
+    print(locals())
+    
+    basin_of_attraction_cooperation_results_each_mode = {}
+    
+    
+    ecopg = BaseEcologicalPublicGood(m = m_value, degraded_choice=degraded_choice)
+
+    for mode in information_modes:
+        # Initialize the information condition
+        information_condition_instance = Information_Conditions(ecopg, mode=mode)
+        mae_ecopg = POstratAC_eps(env=information_condition_instance, learning_rates=0.01, discount_factors= discount_factor)
+
+        # Data storage
+
+        # print(f"\nMode: {mode}")
+
+        avg_coop_time_pairs = run_simulation_across_conditions_parallel(
+            mae = mae_ecopg, 
+            num_samples = num_samples,
+            make_degraded_state_cooperation_probablity_zero_at_end = make_degraded_state_cooperation_probablity_zero_at_end,
+            make_degraded_state_obsdist_zero_at_end = make_degraded_state_obsdist_zero_at_end
+        )
+
+        cooperation_basin_size = get_results_only_cooperation_basin_of_attraction_size(avg_coop_time_pairs)
+
+        basin_of_attraction_cooperation_results_each_mode[mode] = cooperation_basin_size
+
+    print(basin_of_attraction_cooperation_results_each_mode)
+    return basin_of_attraction_cooperation_results_each_mode

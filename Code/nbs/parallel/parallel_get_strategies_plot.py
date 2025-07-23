@@ -25,11 +25,11 @@ mae_ecopg = POstratAC_eps(env=information_condition_instance, learning_rates=0.0
 if __name__ == "__main__":
 
     result_list = run_simulation_across_conditions_parallel(
-        mae = mae_ecopg, 
-        mode = mode,
-        num_samples = 100, 
-        exclude_degraded_state_for_average_cooperation = False
-    )
+            mae = mae_ecopg, 
+            num_samples = 2,
+            make_degraded_state_cooperation_probablity_zero_at_end= True,
+            make_degraded_state_obsdist_zero_at_end= True
+        )
 
     make_plots_only_final_point(information_condition_instance, mae_ecopg, result_list)
 
