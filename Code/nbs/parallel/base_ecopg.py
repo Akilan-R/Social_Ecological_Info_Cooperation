@@ -1,6 +1,6 @@
 # %%
 from imports import *
-
+from information_conditions import Information_Conditions
 
 # %%
 BaseEcologicalPublicGood = partial(
@@ -20,8 +20,7 @@ BaseEcologicalPublicGood = partial(
 
 
 # %%
-def create_mae_POstratAC_eps(information_condition_instance = None, discount_factors=0.98):
-    return POstratAC_eps(env=information_condition_instance, learning_rates=0.1, discount_factors=discount_factors)
+
 
 
 
@@ -34,3 +33,12 @@ all_information_modes = [
     ]
 
 
+
+
+# %%
+
+def create_mae_ecopg_for_given_mode_POstratAC(mode):
+    ecopg = BaseEcologicalPublicGood()
+    information_condition_instance = Information_Conditions(ecopg, mode= mode)
+    mae_ecopg = POstratAC(env=information_condition_instance, learning_rates=0.05, discount_factors= 0.98)
+    return mae_ecopg

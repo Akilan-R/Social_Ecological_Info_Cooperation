@@ -36,15 +36,15 @@ class Information_Conditions(HistoryEmbedded):
     def configure_information_condition(self):
         """
         Set the observation mode and configure the observation tensor, Oset, and other properties.
-        Modes: 'state', 'action', 'none', 'state+action'
+        Modes: 'ecological condition', 'action', 'none', 'state+action'
         """
-        if self.mode == "only_state_information":
+        if self.mode == "ecological":   #only ecological
             self._configure_state()
-        elif self.mode == "only_action_history_information":
+        elif self.mode == "social": #only social
             self._configure_action()
-        elif self.mode == "no_information":
+        elif self.mode == "none": #none
             self._configure_none()
-        elif self.mode == "both_state_and_action_information":
+        elif self.mode == "complete": #both ecology and social
             self._configure_state_action()
         else:
             raise ValueError("Invalid mode..")
