@@ -256,7 +256,7 @@ def run_simulation_for_initial_condition_with_traj(initial_condition, mae,
                                          make_degraded_state_cooperation_probablity_zero_at_end, make_degraded_state_obsdist_zero_at_end):
 
 
-    xtraj, fixedpointreached = mae.trajectory(initial_condition, Tmax= 100000, tolerance=1e-5)
+    xtraj, fixedpointreached = mae.trajectory(initial_condition, Tmax= 10000, tolerance=1e-5)
     # xtraj, fixedpointreached = mae.trajectory(initial_condition, Tmax=50000, tolerance=1e-25)
     # if fixedpointreached == False:
     #     print("Warning: Fixed point not reached within 50000 iterations", np.round(initial_condition,3), mode)

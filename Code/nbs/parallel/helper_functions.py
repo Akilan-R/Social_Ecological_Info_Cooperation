@@ -166,10 +166,10 @@ def create_strategy_frequncy_table(results_list_flattened_final_point, strategy_
 # %%
 
 all_information_modes = [
-        "both_state_and_action_information",
-        "only_action_history_information",
-            "only_state_information",
-            "no_information"]
+        "complete",
+        "social",
+            "ecological",
+            "none"]
 
 # %%
 
@@ -227,13 +227,6 @@ def add_random_degraded_state_policy(starting_point):
 
 #%%
 
-def generate_random_initial_conditions_around_point(mae, test_point, num_samples, perturbation_size, mode):
-    random_initial_conditions = lhs_sampling(mae.Q, num_samples, mae.N)
-    if mode == 'both_state_and_action_information' or  mode == 'only_state_information':
-        random_initial_conditions_around_point = [(add_random_degraded_state_policy(test_point) + perturbation_size*sample)/(1 + perturbation_size) for sample in random_initial_conditions]
-    if mode ==  'no_information' or  mode == 'only_action_history_information':
-        random_initial_conditions_around_point = [(test_point + perturbation_size*sample)/(1 + perturbation_size) for sample in random_initial_conditions]
-    return random_initial_conditions_around_point
 
 
 #%%
