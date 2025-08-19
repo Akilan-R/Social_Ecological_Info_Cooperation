@@ -215,15 +215,7 @@ def classify_final_point(final_point):
     agent_1_classification, agent_2_classification = classify_strategy(agent_1_strategy), classify_strategy(agent_2_strategy)
 
     return (agent_1_classification, agent_2_classification)
-#%%
 
-def add_random_degraded_state_policy(starting_point):
-     for i in [0, 2, 4, 6]:
-        random_block = np.random.rand(2)
-        stacked_random_block = np.stack([random_block, 1-random_block],axis = -1)
-        starting_point = np.insert(starting_point, i, stacked_random_block, axis = 1)
-
-     return starting_point
 
 #%%
 

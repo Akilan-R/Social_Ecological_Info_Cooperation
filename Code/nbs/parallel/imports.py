@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 
+
 from pyCRLD.Environments.SocialDilemma import SocialDilemma
 from pyCRLD.Environments.EcologicalPublicGood import EcologicalPublicGood
 
@@ -24,6 +25,7 @@ from scipy.stats import qmc
 import itertools as it
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.subplots
 
 import time
 from datetime import timedelta
