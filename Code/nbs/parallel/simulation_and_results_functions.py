@@ -2,12 +2,14 @@
 from imports import *
 from helper_functions import *
 from information_conditions import Information_Conditions
+
+
 # %%
-def run_simulation_for_initial_condition(initial_condition, mae,
-                                         make_degraded_state_cooperation_probablity_zero_at_end, make_degraded_state_obsdist_zero_at_end):
+
+def run_simulation_for_initial_condition(initial_condition, mae, mode, remove_degraded_state = True):
 
 
-    xtraj, fixedpointreached = mae.trajectory(initial_condition, Tmax= 100000, tolerance=1e-5)
+    xtraj, fixedpointreached = mae.trajectory(initial_condition, Tmax= 25000, tolerance=1e-5)
     # xtraj, fixedpointreached = mae.trajectory(initial_condition, Tmax=50000, tolerance=1e-25)
     # if fixedpointreached == False:
     #     print("Warning: Fixed point not reached within 50000 iterations", np.round(initial_condition,3), mode)
@@ -16,8 +18,10 @@ def run_simulation_for_initial_condition(initial_condition, mae,
     obsdist = mae.obsdist(final_point)
 
    
-    if make_degraded_state_cooperation_probablity_zero_at_end:  final_point = make_degraded_state_cooperation_probablity_zero(final_point, mae.env.Oset[0])
-    if make_degraded_state_obsdist_zero_at_end: obsdist = exclude_degraded_states_from_obsdist(obsdist, mae.env.Oset[0])
+    if remove_degraded_state:  
+        if mode == 'ecological' or mode == 'complete':
+            final_point = final_point[:, 1::2,:]
+            obsdist = obsdist[:, 1::2]
 
     #IMP! Only excluded degraded states from obsdist and final point at the end of simulation for reporting values.
         #  No interference while simulations are running.
@@ -42,6 +46,46 @@ def run_simulation_for_initial_condition(initial_condition, mae,
     }
 
     return results_dict
+# # %%
+# def run_simulation_for_initial_condition(initial_condition, mae,
+#                                          make_degraded_state_cooperation_probablity_zero_at_end, make_degraded_state_obsdist_zero_at_end):
+
+
+#     xtraj, fixedpointreached = mae.trajectory(initial_condition, Tmax= 10000, tolerance=1e-5)
+#     # xtraj, fixedpointreached = mae.trajectory(initial_condition, Tmax=50000, tolerance=1e-25)
+#     # if fixedpointreached == False:
+#     #     print("Warning: Fixed point not reached within 50000 iterations", np.round(initial_condition,3), mode)
+        
+#     final_point = xtraj[-1]
+#     obsdist = mae.obsdist(final_point)
+
+   
+#     if make_degraded_state_cooperation_probablity_zero_at_end:  final_point = make_degraded_state_cooperation_probablity_zero(final_point, mae.env.Oset[0])
+#     if make_degraded_state_obsdist_zero_at_end: obsdist = exclude_degraded_states_from_obsdist(obsdist, mae.env.Oset[0])
+
+#     #IMP! Only excluded degraded states from obsdist and final point at the end of simulation for reporting values.
+#         #  No interference while simulations are running.
+    
+
+#     avg_coop_across_states_each_agent = get_average_cooperativeness(
+#         policy=final_point, 
+#         obsdist= obsdist
+#     ) #we're only considiering agent i
+
+#     avg_coop_across_states_across_agents = np.mean(avg_coop_across_states_each_agent)  #average cooperation between agents. Alternatively, one could just take the cooperatoin of the first agent.
+#     time_to_reach = xtraj.shape[0]
+
+#     del xtraj
+
+#     results_dict = {
+#         'avg_coop': avg_coop_across_states_across_agents,
+#         'time_to_reach': time_to_reach,
+#         # 'xtraj': xtraj,            #xtraj is large, so we don't want to store it esp when parallel processing is odne
+#         'final_point': final_point,
+#          'obsdist': obsdist,
+#     }
+
+#     return results_dict
 
 
 # %%
@@ -78,18 +122,33 @@ def run_simulation_across_conditions(mae, mode, num_samples,
 
 
 # %%
-def run_simulation_across_conditions_parallel(mae, num_samples, make_degraded_state_cooperation_probablity_zero_at_end = True, make_degraded_state_obsdist_zero_at_end = True):
+# def run_simulation_across_conditions_parallel(mae, num_samples, make_degraded_state_cooperation_probablity_zero_at_end = True, make_degraded_state_obsdist_zero_at_end = True):
+
+#     result_tuple_list = []
+
+#     initial_conditions_list = lhs_sampling(mae.Q, num_samples, mae.N)
+#     run_simulation_for_initial_condition_partial = partial(run_simulation_for_initial_condition, mae = mae, make_degraded_state_cooperation_probablity_zero_at_end = make_degraded_state_cooperation_probablity_zero_at_end, make_degraded_state_obsdist_zero_at_end = make_degraded_state_obsdist_zero_at_end)
+    
+#     with Pool() as pool:
+#         result_tuple_list = pool.map(run_simulation_for_initial_condition_partial, initial_conditions_list)
+    
+
+#     return result_tuple_list
+
+# %%
+def run_simulation_across_conditions_parallel(mae, num_samples, mode, remove_degraded_state = True):
 
     result_tuple_list = []
 
     initial_conditions_list = lhs_sampling(mae.Q, num_samples, mae.N)
-    run_simulation_for_initial_condition_partial = partial(run_simulation_for_initial_condition, mae = mae, make_degraded_state_cooperation_probablity_zero_at_end = make_degraded_state_cooperation_probablity_zero_at_end, make_degraded_state_obsdist_zero_at_end = make_degraded_state_obsdist_zero_at_end)
+    run_simulation_for_initial_condition_partial = partial(run_simulation_for_initial_condition, mae = mae, mode = mode, remove_degraded_state = remove_degraded_state)
     
     with Pool() as pool:
         result_tuple_list = pool.map(run_simulation_for_initial_condition_partial, initial_conditions_list)
     
 
     return result_tuple_list
+
 
 
 # %%

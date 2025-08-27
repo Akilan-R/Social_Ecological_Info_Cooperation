@@ -8,7 +8,7 @@ from pyCRLD.Environments.EcologicalPublicGood import EcologicalPublicGood
 
 from pyCRLD.Agents.StrategyActorCritic import stratAC
 from pyCRLD.Agents.POStrategyActorCritic import POstratAC
-from pyCRLD.Agents.POStrategyActorCritic_eps import POstratAC_eps
+# from pyCRLD.Agents.POStrategyActorCritic_eps import POstratAC_eps
 
 
 from pyCRLD.Utils import FlowPlot as fp
@@ -18,7 +18,7 @@ import jax.numpy as jnp
 from pyCRLD.Environments.HistoryEmbedding import HistoryEmbedded
 from functools import partial
 
-from nbdev.showdoc import show_doc
+# from nbdev.showdoc import show_doc
 from scipy.stats import kstest
 
 from scipy.stats import qmc
@@ -32,9 +32,9 @@ from datetime import timedelta
 import math
 from multiprocessing import Pool
 import ast
-import nashpy
+# import nashpy
 import itertools
-import pygambit
+# import pygambit
 
 global_seed = 41
 np.random.seed(global_seed)

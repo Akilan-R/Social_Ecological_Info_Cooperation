@@ -162,6 +162,7 @@ def create_strategy_frequncy_table(results_list_flattened_final_point, strategy_
     sorted_df['final_point'] = sorted_df['final_point'].apply(lambda x: np.array(x).reshape(strategy_shape)).reset_index(drop = True)
     
     dataframe['final_point'] = dataframe['final_point'].apply(lambda x: np.array(x).reshape(strategy_shape)).reset_index(drop = True)
+    
     return sorted_df, dataframe
 # %%
 
