@@ -39,6 +39,7 @@ def check_for_stability(test_point, mae, mode):
 
 
     checking_if_same = [np.linalg.norm(new_final_point.flatten() - (test_point.flatten()), ord = 2) < 1e-1 for new_final_point in new_final_points]
+
     if np.all(checking_if_same) == True:
         stability =  True
     else:
@@ -112,7 +113,7 @@ def create_policy_from_strategy(agent_1_strategy, agent_2_strategy):
 if __name__ == '__main__':
 
 
-    modes = ['social']
+    modes = ['none']
 
 
     for mode in modes: 
