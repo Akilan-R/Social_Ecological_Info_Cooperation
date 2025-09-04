@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     for discount_factor in discount_factor_list:
 
-        for mode in [ 'none', 'ecological', 'complete']:
+        for mode in ['social']:
             ecopg = BaseEcologicalPublicGood(m = m_value)
             information_condition_instance = Information_Conditions(ecopg, mode= mode)
             mae_ecopg = POstratAC(env=information_condition_instance, learning_rates=0.05, discount_factors = discount_factor)

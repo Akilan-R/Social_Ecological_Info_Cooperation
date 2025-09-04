@@ -113,14 +113,15 @@ def create_policy_from_strategy(agent_1_strategy, agent_2_strategy):
 if __name__ == '__main__':
 
 
-    modes = ['none']
+    modes = ['social']
 
 
     for mode in modes: 
         
-        m_values_list = [-2,-6,-8]
+        discount_factor_list = [0.955, 0.965, 0.975, 0.985, 0.995]
+        m_value = -6.5
         
-        for m_value in m_values_list:
+        for discount_factor in discount_factor_list:
             strategy_set_p1, strategy_set_p2 = create_determinstic_strategies_set_for_both_players(mode)
             strategy_combinations = itertools.combinations_with_replacement(strategy_set_p1.values(),2)
             mae = create_mae_ecopg_for_given_mode_POstratAC_expanded(mode, m = m_value, discount_factor = 0.98)
