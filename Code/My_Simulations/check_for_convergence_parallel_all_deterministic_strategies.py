@@ -111,110 +111,59 @@ def create_policy_from_strategy(agent_1_strategy, agent_2_strategy):
     return policy
 # %% 
 
-strategy_set_p1_temp = {'[1, 0, 0, 0]': [1, 0, 0, 0], '[0, 1, 0, 0]': [0, 1, 0, 0], '[0, 0, 0, 0]': [0, 0, 0, 0]}
+strategy_set_p1_temp = {'[1, 0, 0, 0]': [1, 0, 0, 0]}
 # %%
 if __name__ == '__main__':
 
-
-    modes = ['social']
-
+    # filepath = os.path.join("..", "..", "..", filename)
+    # df = pd.read_excel("./Code/Data/Local_Stability_Analysis/stable_policies_local_stability_analysis.xlsx")
+    df = pd.read_csv("Code/Data/Local_Stability_Analysis/stable_policies_local_stability_analysis.csv")
+    modes = ['ecological']
+    
+    print(df.head())
 
     for mode in modes: 
         
         discount_factor_list = [0.995]
-        m_value = -6.5
+        m_value = -4
         
         for discount_factor in discount_factor_list:
-            strategy_set_p1, strategy_set_p2 = create_determinstic_strategies_set_for_both_players(mode)
-            strategy_combinations = itertools.combinations_with_replacement(strategy_set_p1_temp.values(),2)
-            mae = create_mae_ecopg_for_given_mode_POstratAC_expanded(mode, m = m_value, discount_factor = discount_factor)
 
-            # print(list(strategy_combinations))
-            policies =  np.array([create_policy_from_strategy(p1_strategy, p2_strategy) for p1_strategy, p2_strategy in strategy_combinations])
-            check_for_stability_mode = partial(check_for_stability, mae = mae, mode = mode)
+            # --- Step 1: Check if row already exists ---
+            sub = df[(df["mode"] == mode) & (df["discount_factor"] == discount_factor) & (df["m_value"] == m_value)]
 
+            if not sub.empty:
+                print("Result already exists:")
+                print(sub)
+            else:
+                print("Result does not aleady exist, computing now...")
+                    
+                strategy_set_p1, strategy_set_p2 = create_determinstic_strategies_set_for_both_players(mode)
+                strategy_combinations = itertools.combinations_with_replacement(strategy_set_p1.values(),2)
+                mae = create_mae_ecopg_for_given_mode_POstratAC_expanded(mode, m = m_value, discount_factor = discount_factor)
 
-            with Pool() as pool:
-                        results = pool.map(check_for_stability_mode, policies)
-                        print("==", mode, "===")
-                        print('m =', m_value, "discount factor =", discount_factor)
-                        if mode == 'complete' or mode == 'ecological':
-                            policies_for_print = np.array([policy[:, 1::2,0] for policy in policies])
-                        else:
-                            policies_for_print = np.array([policy[:, :,0] for policy in policies])
+                # print(list(strategy_combinations))
+                policies =  np.array([create_policy_from_strategy(p1_strategy, p2_strategy) for p1_strategy, p2_strategy in strategy_combinations])
+                check_for_stability_mode = partial(check_for_stability, mae = mae, mode = mode)
 
-                        print((policies_for_print[results]))
+                stable_policies_list = []
 
+                with Pool() as pool:
+                            results = pool.map(check_for_stability_mode, policies)
+                            print("==", mode, "===")
+                            print('m =', m_value, "discount factor =", discount_factor)
+                            if mode == 'complete' or mode == 'ecological':
+                                policies_for_print = np.array([policy[:, 1::2,0] for policy in policies])
+                            else:
+                                policies_for_print = np.array([policy[:, :,0] for policy in policies])
 
-# %%
+                            stable_policies = policies_for_print[results]
 
-# [[[[0 1]
-#    [0 1]      only social
-#    [0 1]
-#    [0 1]]
+                            rows = [{"discount_factor": discount_factor,"m_value": m_value, "policy": stable_policies.tolist(), "mode" : mode}]
+                            
+                            stable_policies_list.extend(rows)
+                
+                updated_df = pd.concat([df, pd.DataFrame(stable_policies_list)], ignore_index=True)
+                # updated_df = pd.DataFrame(stable_policies_list, ignore_index=True)
+                updated_df.to_csv("./Code/Data/Local_Stability_Analysis/stable_policies_local_stability_analysis.csv", index=False)
 
-#   [[0 1]
-#    [0 1]
-#    [0 1]
-#    [0 1]]]]
-
-# == none ===
-# [[[[0 1]]
-
-#   [[0 1]]]]
-
-
-
-# == ecological ===
-#    [1.         0.        ]]
-#    [1.         0.        ]]]
-
-
-#    [0.         1.        ]]
-#    [0.         1.        ]]]
-
-
-
-# == complete ===
-#    [1.         0.        ]
-#    [1.         0.        ]
-#    [1.         0.        ]
-#    [1.         0.        ]]
-
-#    [1.         0.        ]
-#    [1.         0.        ]
-#    [1.         0.        ]
-#    [1.         0.        ]]]
-
-
-#    [1.         0.        ]
-#    [0.         1.        ]
-#    [0.         1.        ]
-#    [1.         0.        ]]
-
-#    [1.         0.        ]
-#    [0.         1.        ]
-#    [0.         1.        ]
-#    [1.         0.        ]]]
-
-
-#    [0.         1.        ]
-#    [0.         1.        ]
-#    [0.         1.        ]
-#    [1.         0.        ]]
-
-#    [0.         1.        ]
-#    [0.         1.        ]
-#    [0.         1.        ]
-#    [1.         0.        ]]]
-
-
-#    [0.         1.        ]
-#    [0.         1.        ]
-#    [0.         1.        ]
-#    [0.         1.        ]]
-
-#    [0.         1.        ]
-#    [0.         1.        ]
-#    [0.         1.        ]
-#    [0.         1.        ]]]]

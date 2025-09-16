@@ -1,0 +1,2 @@
+mode,discount_factor,m_value,policy
+ecological,0.995,-4,"[[[1.0], [1.0]], [[0.0], [0.0]]]"

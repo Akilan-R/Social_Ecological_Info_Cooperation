@@ -1,7 +1,7 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import copy
 
+import copy
+import os
 
 from pyCRLD.Environments.SocialDilemma import SocialDilemma
 from pyCRLD.Environments.EcologicalPublicGood import EcologicalPublicGood
@@ -35,6 +35,9 @@ import ast
 # import nashpy
 import itertools
 # import pygambit
+import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 global_seed = 41
 np.random.seed(global_seed)
