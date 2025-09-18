@@ -112,58 +112,76 @@ def create_policy_from_strategy(agent_1_strategy, agent_2_strategy):
 # %% 
 
 strategy_set_p1_temp = {'[1, 0, 0, 0]': [1, 0, 0, 0]}
+
+def get_locally_stable_determinstic_strategies(mode, discount_factor, m_value):
+
+    strategy_set_p1, strategy_set_p2 = create_determinstic_strategies_set_for_both_players(mode)
+    strategy_combinations = itertools.combinations_with_replacement(strategy_set_p1.values(),2)
+    mae = create_mae_ecopg_for_given_mode_POstratAC_expanded(mode, m = m_value, discount_factor = discount_factor)
+
+    # print(list(strategy_combinations))
+    policies =  np.array([create_policy_from_strategy(p1_strategy, p2_strategy) for p1_strategy, p2_strategy in strategy_combinations])
+    check_for_stability_mode = partial(check_for_stability, mae = mae, mode = mode)
+
+    stable_policies_list = []
+
+    with Pool() as pool:
+                results = pool.map(check_for_stability_mode, policies)
+                print("==", mode, "===")
+                print('m =', m_value, "discount factor =", discount_factor)
+                if mode == 'complete' or mode == 'ecological':
+                    policies_for_print = np.array([policy[:, 1::2,0] for policy in policies])
+                else:
+                    policies_for_print = np.array([policy[:, :,0] for policy in policies])
+
+                stable_policies = policies_for_print[results]
+
+                rows = [{"discount_factor": discount_factor,"m_value": m_value, "policy": stable_policies.tolist(), "mode" : mode}]
+                
+                stable_policies_list.extend(rows)
+    
+    new_stable_policy_df = pd.DataFrame(stable_policies_list)      # create DataFrame
+    new_stable_policy_df = new_stable_policy_df.reset_index(drop=True)
+    return new_stable_policy_df
+
+# %%
+
+#I want a function that does whatever is below __name__ == '__main__' and takes in the modes, discount factosr and m valuse as arguments:
+
+filepath = "./Code/Data/Local_Stability_Analysis/stable_policies_local_stability_analysis.csv"
+def calculate_locally_stable_determinstic_strategies_for_given_parameters(modes_list, discount_factor_list, m_value_list, filepath):
+
+    updated_df = pd.read_csv(filepath)
+
+    for mode in modes_list: 
+        
+        for discount_factor in discount_factor_list:
+            for m_value in m_value_list:
+
+                # --- Step 1: Check if row already exists ---
+                sub = updated_df[(updated_df["mode"] == mode) & (updated_df["discount_factor"] == discount_factor) & (updated_df["m_value"] == m_value)]
+
+                if not sub.empty:
+                    print("Result already exists:")
+                    print(sub)
+                else:
+                    print("Result does not aleady exist, computing now...")
+
+                    new_stable_policy_df = get_locally_stable_determinstic_strategies(mode, discount_factor, m_value)
+                    updated_df = pd.concat([updated_df, new_stable_policy_df], ignore_index=True)
+                    # updated_df = pd.DataFrame(stable_policies_list, ignore_index=True)
+                    updated_df.to_csv(filepath, index=False)
+
+
+
 # %%
 if __name__ == '__main__':
 
     # filepath = os.path.join("..", "..", "..", filename)
     # df = pd.read_excel("./Code/Data/Local_Stability_Analysis/stable_policies_local_stability_analysis.xlsx")
-    df = pd.read_csv("Code/Data/Local_Stability_Analysis/stable_policies_local_stability_analysis.csv")
-    modes = ['ecological']
-    
-    print(df.head())
-
-    for mode in modes: 
-        
-        discount_factor_list = [0.995]
-        m_value = -4
-        
-        for discount_factor in discount_factor_list:
-
-            # --- Step 1: Check if row already exists ---
-            sub = df[(df["mode"] == mode) & (df["discount_factor"] == discount_factor) & (df["m_value"] == m_value)]
-
-            if not sub.empty:
-                print("Result already exists:")
-                print(sub)
-            else:
-                print("Result does not aleady exist, computing now...")
-                    
-                strategy_set_p1, strategy_set_p2 = create_determinstic_strategies_set_for_both_players(mode)
-                strategy_combinations = itertools.combinations_with_replacement(strategy_set_p1.values(),2)
-                mae = create_mae_ecopg_for_given_mode_POstratAC_expanded(mode, m = m_value, discount_factor = discount_factor)
-
-                # print(list(strategy_combinations))
-                policies =  np.array([create_policy_from_strategy(p1_strategy, p2_strategy) for p1_strategy, p2_strategy in strategy_combinations])
-                check_for_stability_mode = partial(check_for_stability, mae = mae, mode = mode)
-
-                stable_policies_list = []
-
-                with Pool() as pool:
-                            results = pool.map(check_for_stability_mode, policies)
-                            print("==", mode, "===")
-                            print('m =', m_value, "discount factor =", discount_factor)
-                            if mode == 'complete' or mode == 'ecological':
-                                policies_for_print = np.array([policy[:, 1::2,0] for policy in policies])
-                            else:
-                                policies_for_print = np.array([policy[:, :,0] for policy in policies])
-
-                            stable_policies = policies_for_print[results]
-
-                            rows = [{"discount_factor": discount_factor,"m_value": m_value, "policy": stable_policies.tolist(), "mode" : mode}]
-                            
-                            stable_policies_list.extend(rows)
-                
-                updated_df = pd.concat([df, pd.DataFrame(stable_policies_list)], ignore_index=True)
-                # updated_df = pd.DataFrame(stable_policies_list, ignore_index=True)
-                updated_df.to_csv("./Code/Data/Local_Stability_Analysis/stable_policies_local_stability_analysis.csv", index=False)
+    calculate_locally_stable_determinstic_strategies_for_given_parameters(
+        modes_list = ['complete'],
+        discount_factor_list = [0.995],
+        m_value_list = [-6.5],
+        filepath = filepath)
 

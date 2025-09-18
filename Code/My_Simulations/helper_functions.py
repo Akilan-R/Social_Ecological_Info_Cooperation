@@ -174,41 +174,47 @@ all_information_modes = [
 
 # %%
 
-def strategy_to_label(strategy, include_mixed_strategies = True):
+def strategy_to_label(strategy, mode, include_mixed_strategies = True):
 
     # print(strategy)
-    if len(strategy) == 8:
-        strategy = strategy[1::2]
-
     classification = None
+    strategy = np.array(strategy)
+    if mode == 'social' or mode == 'complete':
+   
 
-    Oset = np.array(['c,c', 'c,d', 'd,c', 'd,d'])
+        Oset = np.array(['c,c', 'c,d', 'd,c', 'd,d'])
+        if np.all(strategy >= 0.9):
+            classification = 'ALL C'
 
-    if np.all(strategy >= 0.9):
-        classification = 'ALL C'
+        elif np.all((strategy[np.isin(Oset, ['c,c', 'd,d'])]) >= 0.9) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c'])]) <= 0.1):
+            classification = 'WSLS'
 
-    elif np.all((strategy[np.isin(Oset, ['c,c', 'd,d'])]) >= 0.9) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c'])]) <= 0.1):
-        classification = 'WSLS'
+        elif np.all((strategy[np.isin(Oset, ['c,c'])]) >= 0.9) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c', 'd,d'])]) <= 0.1):
+            classification = 'GT'
+        
+        elif np.all(strategy <= 0.1):
+            classification = 'ALL D'
 
-    elif np.all((strategy[np.isin(Oset, ['c,c'])]) >= 0.9) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c', 'd,d'])]) <= 0.1):
-        classification = 'GT'
-    
-    
-    elif np.all(strategy <= 0.1):
-        classification = 'ALL D'
-    
-    elif np.all((strategy[np.isin(Oset, ['d,d'])]) >= 0.9) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c', 'c,c'])]) <= 0.1):
-        classification = 'Reverse GT'
+        elif np.all((strategy[np.isin(Oset, ['d,d'])]) >= 0.9) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c', 'c,c'])]) <= 0.1):
+            classification = 'Inv. GT'
 
+        else:
+            classification = "other"
 
-    # elif (np.all(strategy) > 0.5) and (np.any(strategy) < 0.9):
-    #     classification = 'Almost ALL C'
-    
-    # elif (np.all(strategy) < 0.5) and (np.any(strategy) > 0.05):
-    #     classification = 'Mostly D'
- 
-    else:
-        classification = "other"
+    if mode == 'ecological' or mode == 'none':
+
+        if np.all(strategy >= 0.9):
+            classification = 'ALL C'
+        elif np.all(strategy <= 0.1):
+            classification = 'ALL D'
+        else:
+            classification = "other"
+
+         # elif (np.all(strategy) > 0.5) and (np.any(strategy) < 0.9):
+            #     classification = 'Almost ALL C'
+            
+            # elif (np.all(strategy) < 0.5) and (np.any(strategy) > 0.05):
+            #     classification = 'Mostly D'
 
     return classification
 
