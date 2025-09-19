@@ -174,10 +174,10 @@ all_information_modes = [
 
 # %%
 
-def strategy_to_label(strategy, mode, include_mixed_strategies = True):
+def strategy_to_label(strategy, mode, include_mixed_strategies=False):
 
     # print(strategy)
-    classification = None
+
     strategy = np.array(strategy)
     if mode == 'social' or mode == 'complete':
    
@@ -186,17 +186,37 @@ def strategy_to_label(strategy, mode, include_mixed_strategies = True):
         if np.all(strategy >= 0.9):
             classification = 'ALL C'
 
-        elif np.all((strategy[np.isin(Oset, ['c,c', 'd,d'])]) >= 0.9) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c'])]) <= 0.1):
+        elif np.all((strategy[np.isin(Oset, ['c,c', 'd,d'])]) >= 0.99) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c'])]) <= 0.01):
             classification = 'WSLS'
 
-        elif np.all((strategy[np.isin(Oset, ['c,c'])]) >= 0.9) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c', 'd,d'])]) <= 0.1):
+        elif np.all((strategy[np.isin(Oset, ['c,c'])]) >= 0.99) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c', 'd,d'])]) <= 0.01):
             classification = 'GT'
         
         elif np.all(strategy <= 0.1):
             classification = 'ALL D'
 
-        elif np.all((strategy[np.isin(Oset, ['d,d'])]) >= 0.9) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c', 'c,c'])]) <= 0.1):
+        elif np.all((strategy[np.isin(Oset, ['d,d'])]) >= 0.99) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c', 'c,c'])]) <= 0.01):
             classification = 'Inv. GT'
+
+
+        elif include_mixed_strategies:
+            strategy_rounded = np.round(strategy)
+            #change everything to equal to 1 or 0
+           
+
+            if np.all(strategy_rounded == 1):
+                classification = 'Almost ALL C'
+            elif np.all(strategy_rounded == 0):
+                classification = 'Almost ALL D'
+            elif np.all((strategy_rounded[np.isin(Oset, ['c,c', 'd,d'])]) == 1) and np.all((strategy_rounded[np.isin(Oset, ['c,d', 'd,c'])]) == 0):
+                classification = 'Almost WSLS'
+            elif np.all((strategy_rounded[np.isin(Oset, ['c,c'])]) == 1) and np.all((strategy_rounded[np.isin(Oset, ['c,d', 'd,c', 'd,d'])]) == 0):
+                    classification = 'Almost GT'
+            elif np.all((strategy_rounded[np.isin(Oset, ['d,d'])]) == 1) and np.all((strategy_rounded[np.isin(Oset, ['c,d', 'd,c', 'c,c'])]) == 0):
+                    classification = 'Almost Inv. GT'
+        
+            else:
+                classification = 'other'
 
         else:
             classification = "other"
@@ -207,16 +227,21 @@ def strategy_to_label(strategy, mode, include_mixed_strategies = True):
             classification = 'ALL C'
         elif np.all(strategy <= 0.1):
             classification = 'ALL D'
+
+        elif include_mixed_strategies:
+            strategy_rounded = np.round(strategy)
+            #change everything to equal to 1 or 0
+            if np.all(strategy_rounded == 1):
+                classification = 'ALL C'
+            elif np.all(strategy_rounded == 0):
+                classification = 'ALL D'
+            else:
+                classification = 'other'
         else:
             classification = "other"
 
-         # elif (np.all(strategy) > 0.5) and (np.any(strategy) < 0.9):
-            #     classification = 'Almost ALL C'
-            
-            # elif (np.all(strategy) < 0.5) and (np.any(strategy) > 0.05):
-            #     classification = 'Mostly D'
-
     return classification
+
 
 def classify_final_point(final_point):
     final_point_only_coop = final_point[:,:,0]
