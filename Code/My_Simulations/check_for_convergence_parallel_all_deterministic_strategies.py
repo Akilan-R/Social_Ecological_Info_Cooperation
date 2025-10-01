@@ -111,7 +111,6 @@ def create_policy_from_strategy(agent_1_strategy, agent_2_strategy):
     return policy
 # %% 
 
-strategy_set_p1_temp = {'[1, 0, 0, 0]': [1, 0, 0, 0]}
 
 def get_locally_stable_determinstic_strategies(mode, discount_factor, m_value):
 
@@ -127,8 +126,7 @@ def get_locally_stable_determinstic_strategies(mode, discount_factor, m_value):
 
     with Pool() as pool:
                 results = pool.map(check_for_stability_mode, policies)
-                print("==", mode, "===")
-                print('m =', m_value, "discount factor =", discount_factor)
+            
                 if mode == 'complete' or mode == 'ecological':
                     policies_for_print = np.array([policy[:, 1::2,0] for policy in policies])
                 else:
@@ -158,21 +156,23 @@ def calculate_locally_stable_determinstic_strategies_for_given_parameters(modes_
         for discount_factor in discount_factor_list:
             for m_value in m_value_list:
 
+                print("mode:", mode, "\ndiscount factor:", discount_factor, "\nm value:", m_value)
+
                 # --- Step 1: Check if row already exists ---
                 sub = updated_df[(updated_df["mode"] == mode) & (updated_df["discount_factor"] == discount_factor) & (updated_df["m_value"] == m_value)]
 
                 if not sub.empty:
                     print("Result already exists:")
-                    print(sub)
+                    print(sub['policy'].values)
                 else:
-                    print("Result does not aleady exist, computing now...")
+                    print("Result does not already exist, computing now...")
 
                     new_stable_policy_df = get_locally_stable_determinstic_strategies(mode, discount_factor, m_value)
+                    print(new_stable_policy_df['policy'].values)
                     updated_df = pd.concat([updated_df, new_stable_policy_df], ignore_index=True)
                     # updated_df = pd.DataFrame(stable_policies_list, ignore_index=True)
                     updated_df.to_csv(filepath, index=False)
-
-
+                print("--------------------------------------------------")
 
 # %%
 if __name__ == '__main__':
@@ -180,8 +180,8 @@ if __name__ == '__main__':
     # filepath = os.path.join("..", "..", "..", filename)
     # df = pd.read_excel("./Code/Data/Local_Stability_Analysis/stable_policies_local_stability_analysis.xlsx")
     calculate_locally_stable_determinstic_strategies_for_given_parameters(
-        modes_list = ['complete'],
-        discount_factor_list = [0.995],
+        modes_list = ['social'],
+        discount_factor_list = [0.955, 0.965, 0.975, 0.985, 0.995],
         m_value_list = [-6.5],
         filepath = filepath)
 

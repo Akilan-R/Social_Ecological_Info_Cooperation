@@ -11,11 +11,6 @@ from simulation_and_results_functions import *
 # %%
 np.set_printoptions(precision=3, suppress=True)
 
-# %% [markdown]
-# 1. No information: all defect with some margin of error
-# 2. Only State - all coop or all defect (with margin of error)
-# 3. Only action history -
-# 4. Both ecological and 
 
 # %%
 
