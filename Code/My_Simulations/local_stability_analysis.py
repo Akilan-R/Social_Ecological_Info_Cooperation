@@ -180,8 +180,8 @@ if __name__ == '__main__':
     # filepath = os.path.join("..", "..", "..", filename)
     # df = pd.read_excel("./Code/Data/Local_Stability_Analysis/stable_policies_local_stability_analysis.xlsx")
     calculate_locally_stable_determinstic_strategies_for_given_parameters(
-        modes_list = ['social'],
-        discount_factor_list = [0.955, 0.965, 0.975, 0.985, 0.995],
+        modes_list = ['complete'],
+        discount_factor_list = [0.985],
         m_value_list = [-6.5],
         filepath = filepath)
 
