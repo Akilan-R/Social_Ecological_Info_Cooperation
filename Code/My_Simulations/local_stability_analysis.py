@@ -146,7 +146,6 @@ def get_locally_stable_determinstic_strategies(mode, discount_factor, m_value):
 
 #I want a function that does whatever is below __name__ == '__main__' and takes in the modes, discount factosr and m valuse as arguments:
 
-filepath = "./Code/Data/Local_Stability_Analysis/stable_policies_local_stability_analysis.csv"
 def calculate_locally_stable_determinstic_strategies_for_given_parameters(modes_list, discount_factor_list, m_value_list, filepath):
 
     updated_df = pd.read_csv(filepath)
@@ -176,12 +175,10 @@ def calculate_locally_stable_determinstic_strategies_for_given_parameters(modes_
 
 # %%
 if __name__ == '__main__':
-
-    # filepath = os.path.join("..", "..", "..", filename)
-    # df = pd.read_excel("./Code/Data/Local_Stability_Analysis/stable_policies_local_stability_analysis.xlsx")
+    filepath = "./Code/Data/Local_Stability_Analysis/stable_policies_local_stability_analysis.csv"
     calculate_locally_stable_determinstic_strategies_for_given_parameters(
-        modes_list = ['complete'],
-        discount_factor_list = [0.985],
+        modes_list = ['social'],
+        discount_factor_list = [0.995],
         m_value_list = [-6.5],
         filepath = filepath)
 
