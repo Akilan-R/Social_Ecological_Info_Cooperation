@@ -17,6 +17,7 @@ from jax import jit
 import jax.numpy as jnp
 from pyCRLD.Environments.HistoryEmbedding import HistoryEmbedded
 from functools import partial
+import matplotlib
 
 # from nbdev.showdoc import show_doc
 from scipy.stats import kstest
@@ -26,7 +27,7 @@ import itertools as it
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.subplots
-import matplotlib
+import matplotlib.pyplot as plt
 
 import time
 from datetime import timedelta

@@ -183,7 +183,7 @@ def strategy_to_label(strategy, mode, include_mixed_strategies=False):
    
 
         Oset = np.array(['c,c', 'c,d', 'd,c', 'd,d'])
-        if np.all(strategy >= 0.9):
+        if np.all(strategy >= 0.99):
             classification = 'ALL C'
 
         elif np.all((strategy[np.isin(Oset, ['c,c', 'd,d'])]) >= 0.99) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c'])]) <= 0.01):
@@ -191,29 +191,28 @@ def strategy_to_label(strategy, mode, include_mixed_strategies=False):
 
         elif np.all((strategy[np.isin(Oset, ['c,c'])]) >= 0.99) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c', 'd,d'])]) <= 0.01):
             classification = 'GT'
-        
-        elif np.all(strategy <= 0.1):
+
+        elif np.all(strategy <= 0.01):
             classification = 'ALL D'
 
         elif np.all((strategy[np.isin(Oset, ['d,d'])]) >= 0.99) and np.all((strategy[np.isin(Oset, ['c,d', 'd,c', 'c,c'])]) <= 0.01):
-            classification = 'Inv. GT'
+            classification = 'Alternate C/D'
 
 
         elif include_mixed_strategies:
             strategy_rounded = np.round(strategy)
-            #change everything to equal to 1 or 0
            
 
             if np.all(strategy_rounded == 1):
-                classification = 'Almost ALL C'
+                classification = 'Approx ALL C'
             elif np.all(strategy_rounded == 0):
-                classification = 'Almost ALL D'
+                classification = 'Approx ALL D'
             elif np.all((strategy_rounded[np.isin(Oset, ['c,c', 'd,d'])]) == 1) and np.all((strategy_rounded[np.isin(Oset, ['c,d', 'd,c'])]) == 0):
-                classification = 'Almost WSLS'
+                classification = 'Approx WSLS'
             elif np.all((strategy_rounded[np.isin(Oset, ['c,c'])]) == 1) and np.all((strategy_rounded[np.isin(Oset, ['c,d', 'd,c', 'd,d'])]) == 0):
-                    classification = 'Almost GT'
+                    classification = 'Approx GT'
             elif np.all((strategy_rounded[np.isin(Oset, ['d,d'])]) == 1) and np.all((strategy_rounded[np.isin(Oset, ['c,d', 'd,c', 'c,c'])]) == 0):
-                    classification = 'Almost Inv. GT'
+                    classification = 'Approx Alternate C/D'
         
             else:
                 classification = 'other'
@@ -223,14 +222,13 @@ def strategy_to_label(strategy, mode, include_mixed_strategies=False):
 
     if mode == 'ecological' or mode == 'none':
 
-        if np.all(strategy >= 0.9):
+        if np.all(strategy >= 0.99):
             classification = 'ALL C'
-        elif np.all(strategy <= 0.1):
+        elif np.all(strategy <= 0.01):
             classification = 'ALL D'
 
         elif include_mixed_strategies:
             strategy_rounded = np.round(strategy)
-            #change everything to equal to 1 or 0
             if np.all(strategy_rounded == 1):
                 classification = 'ALL C'
             elif np.all(strategy_rounded == 0):
