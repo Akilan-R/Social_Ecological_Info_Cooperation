@@ -5,6 +5,10 @@ from base_ecopg import *
 from helper_functions import *
 from simulation_and_results_functions import *
 
+
+#%%
+print(os.getcwd())
+
 # %%
 mae_ecopg_only_action = create_mae_ecopg_for_given_mode_POstratAC("social")
 mae_ecopg_both_state_and_action = create_mae_ecopg_for_given_mode_POstratAC("complete")
@@ -55,7 +59,8 @@ def add_degraded_state_policies_both_state_and_action(strategy):
         strategy_propserous_and_degraded_state = strategy.copy()
 
         for i in [0, 2, 4, 6]:
-            x = np.random.rand()
+            # x = np.random.rand()
+            x = 0  #assuming that agents have 0 cooperation in degraded states
             strategy_propserous_and_degraded_state.insert(i, x)
         
         return strategy_propserous_and_degraded_state
@@ -64,7 +69,8 @@ def add_degraded_state_policies_both_state_and_action(strategy):
 def add_degraded_state_policies_only_state(strategy):
         
         strategy_propserous_and_degraded_state = strategy.copy()
-        x = np.random.rand()
+        # x = np.random.rand()
+        x = 0  #assuming that agents have 0 cooperation in degraded states
         strategy_propserous_and_degraded_state.insert(0, x)
         
         return strategy_propserous_and_degraded_state
@@ -175,9 +181,9 @@ def calculate_locally_stable_determinstic_strategies_for_given_parameters(modes_
 
 # %%
 if __name__ == '__main__':
-    filepath = "./Code/Data/Local_Stability_Analysis/stable_policies_local_stability_analysis.csv"
+    filepath = "./Code/Data/Local_Stability_Analysis/stable_policies_local_stability_analysis_0deg.csv"
     calculate_locally_stable_determinstic_strategies_for_given_parameters(
-        modes_list = ['social'],
+        modes_list = ['social', 'complete', 'ecological', 'none'],
         discount_factor_list = [0.995],
         m_value_list = [-6.5],
         filepath = filepath)

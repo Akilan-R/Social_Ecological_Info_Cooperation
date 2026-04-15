@@ -16,13 +16,6 @@ BaseEcologicalPublicGood = partial(
 
 # Baseline instance
 
-# Overriding certain arguments
-
-
-# %%
-
-
-
 
 # %%
 all_information_modes = [
