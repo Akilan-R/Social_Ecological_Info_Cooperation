@@ -26,8 +26,6 @@ all_information_modes = [
     ]
 
 
-
-
 # %%
 
 def create_mae_ecopg_for_given_mode_POstratAC(mode):

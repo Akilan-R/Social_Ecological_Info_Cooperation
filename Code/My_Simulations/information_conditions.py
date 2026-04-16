@@ -4,7 +4,7 @@ from imports import *
 
 # %%
  
-def generate_action_history_observation_set(stateset, number_of_agents):
+def generate_social_info_observation_set(stateset, number_of_agents):
     action_histories = [state[:3] for state in stateset]
     unique_action_histories = sorted(list(set(action_histories)))
     Oset = [unique_action_histories.copy() for _ in range(number_of_agents)]
@@ -39,9 +39,9 @@ class Information_Conditions(HistoryEmbedded):
         Modes: 'ecological condition', 'action', 'none', 'state+action'
         """
         if self.mode == "ecological":   #only ecological
-            self._configure_state()
+            self._configure_only_eco_info()
         elif self.mode == "social": #only social
-            self._configure_action()
+            self._configure_only_social_info()
         elif self.mode == "none": #none
             self._configure_none()
         elif self.mode == "complete": #both ecology and social
@@ -52,25 +52,25 @@ class Information_Conditions(HistoryEmbedded):
 
         self.Q = self.O.shape[2]
 
-    def _configure_state(self):
-        def generate_state_tensor(state_set, observation_set):
-            state_tensor = np.zeros((2, len(state_set), len(observation_set)), dtype=int)
+    def _configure_only_eco_info(self):
+        def generate_obs_tensor_only_state_info(state_set, observation_set):
+            obs_tensor = np.zeros((2, len(state_set), len(observation_set)), dtype=int)
             for i in range(2):
                 for j, state in enumerate(state_set):
                     for k, observation in enumerate(observation_set):
                         if state.endswith(observation):
-                            state_tensor[i, j, k] = 1
-            return state_tensor
+                            obs_tensor[i, j, k] = 1
+            return obs_tensor
         
         
         self.Oset = generate_state_observation_set(self.Sset, 2)
 
-        self.O = generate_state_tensor(
+        self.O = generate_obs_tensor_only_state_info(
             self.Sset,  self.Oset[0])
         
 
-    def _configure_action(self):
-        def generate_action_tensor(state_set, action_set):
+    def _configure_only_social_info(self):
+        def generate_obs_tensor_only_social_info(state_set, action_set):
             action_tensor = np.zeros((2, len(state_set), len(action_set)), dtype=int)
             for i in range(2):  
                 for j, state in enumerate(state_set):
@@ -79,8 +79,8 @@ class Information_Conditions(HistoryEmbedded):
                             action_tensor[i, j, k] = 1
             return action_tensor
 
-        self.Oset = generate_action_history_observation_set(self.Sset, self.N)
-        self.O = generate_action_tensor(self.Sset, self.Oset[0])
+        self.Oset = generate_social_info_observation_set(self.Sset, self.N)
+        self.O = generate_obs_tensor_only_social_info(self.Sset, self.Oset[0])
 
     def _configure_none(self):
         def generate_none_tensor():
@@ -108,5 +108,90 @@ class Information_Conditions(HistoryEmbedded):
 
 # %%
 
+class Information_Conditions_eps(HistoryEmbedded):
+    def __init__(self, ecopg , mode):
+
+
+        super().__init__(ecopg, h=(1, 1, 1))
+
+        self.mode = mode
+        self.configure_information_condition()
+        self.epsilon = 1e-7
+
+    def configure_information_condition(self):
+        """
+        Set the observation mode and configure the observation tensor, Oset, and other properties.
+        Modes: 'ecological condition', 'action', 'none', 'state+action'
+        """
+        if self.mode == "ecological":   #only ecological
+            self._configure_only_eco_info()
+        elif self.mode == "social": #only social
+            self._configure_only_social_info()
+        elif self.mode == "none": #none
+            self._configure_none()
+        elif self.mode == "complete": #both ecology and social
+            self._configure_state_action()
+        else:
+            raise ValueError("Invalid mode..")
+        # self._print_configuration()
+
+        self.Q = self.O.shape[2]
+
+    def _configure_only_eco_info(self):
+        def generate_obs_tensor_only_state_info(state_set, observation_set):
+            obs_tensor = np.zeros((2, len(state_set), len(observation_set)), dtype=int)
+            for i in range(2):
+                for j, state in enumerate(state_set):
+                    for k, observation in enumerate(observation_set):
+                        if state.endswith(observation):
+                            obs_tensor[i, j, k] = 1 - self.epsilon
+                        else:
+                            obs_tensor[i, j, k] = self.epsilon
+            return obs_tensor
+        
+        
+        self.Oset = generate_state_observation_set(self.Sset, 2)
+
+        self.O = generate_obs_tensor_only_state_info(
+            self.Sset,  self.Oset[0])
+        
+
+    def _configure_only_social_info(self):
+        def generate_obs_tensor_only_social_info(state_set, action_set):
+            action_tensor = np.zeros((2, len(state_set), len(action_set)), dtype=int)
+            for i in range(2):  
+                for j, state in enumerate(state_set):
+                    for k, action in enumerate(action_set):
+                        if action[:3] == state[:3]:
+                            action_tensor[i, j, k] = 1 - self.epsilon
+                        else:
+                            action_tensor[i, j, k] = self.epsilon
+            return action_tensor
+
+        self.Oset = generate_social_info_observation_set(self.Sset, self.N)
+        self.O = generate_obs_tensor_only_social_info(self.Sset, self.Oset[0])
+
+    def _configure_none(self):
+        def generate_none_tensor():
+            return np.ones((2, 8, 1), dtype=int)
+
+        self.O = generate_none_tensor()
+        self.Oset = [['.'], ['.']]
+
+    def _configure_state_action(self):
+        # This assumes the default state+action information in `ecopg_with_history`
+        pass
+          # No modification needed; default setup already uses state+action information.
+
+
+    def _print_configuration(self):
+        print(f"Mode: {self.mode}")
+        # print("Observation Tensor:\n", self.O)
+        # print("Observation Set:", self.Oset)
+        # print("O shape", self.O.shape)
+        # print("Q shape", self.Q)
+        print("Oset:")
+
+        print("------\n")
 
 

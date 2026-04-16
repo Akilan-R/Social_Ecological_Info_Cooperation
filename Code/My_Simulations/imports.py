@@ -2,6 +2,7 @@ import numpy as np
 
 import copy
 import os
+os.chdir("D:/Personal Projects/Social_Ecological_Info_Cooperation/Code/")
 
 from pyCRLD.Environments.SocialDilemma import SocialDilemma
 from pyCRLD.Environments.EcologicalPublicGood import EcologicalPublicGood
