@@ -1,0 +1,134 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+
+\usepackage{amsmath, amssymb}
+\usepackage{setspace}
+\setstretch{1.2}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{enumitem}
+
+
+\begin{document}
+\section*{SPNE Check}
+
+First, we write an expression for cumulative reward for the agent assuming both follow their strategy fully
+
+Let, $V_P$ be the cumulative reward for the agent following the strategy. 
+$u$ or more precisely, $u_1(a_1, a_2)$ be the payoff the agent 1 receives, when the action of each agent is $a_1$ and $a_2$ respectively.
+$p$ is the probability of collapse into degraded state. $p$ is also a function of actions of both agents. 
+
+$m$ is the penalty in the degraded state
+$\delta$ be the discount factor.
+
+To derive expression for $V_P$, we can write the following equation,
+\begin{equation}
+V_P = (1-p)*(\text{cumulative reward in prosperous state}) + p*(\text{cumulative reward in degraded state})
+\end{equation}
+
+Now, immediate reward in prosperous state is $u$ + discounted cumulative future reward in prosperous state, which is $\delta V_P$. 
+Likewise, immediate reward in degraded state is $m$ + discounted cumulative future reward in degraded state, which is $\delta V_D$.
+
+So, we can write,
+
+\begin{equation}\label{eq:VP}
+    V_P = (1-p)(u + \delta V_P) + p(m + \delta V_D)
+\end{equation}
+
+
+$V_D$ is simpler to derive. 
+\begin{equation}
+    \begin{aligned}
+        V_D = m + \delta V_D
+        \implies V_D = \frac{m}{1-\delta}
+    \end{aligned}
+\end{equation}
+
+Substituting the value of $V_D$ in the equation for $V_P$, we get,
+
+\begin{equation}
+    \begin{aligned}
+        V_P &= (1-p)(u + \delta V_P) + p\left(m + \delta \frac{m}{1-\delta}\right) \\
+        &\implies V_P = (1-p)(u + \delta V_P) + \frac{p m}{1-\delta} \\
+        & \implies V_P - (1-p)\delta V_P = (1-p)u + \frac{p m}{1-\delta} \\
+         &\implies V_P(1-(1-p)\delta) = (1-p)u + \frac{p m}{1-\delta}\\
+         &\implies V_P = \frac{(1-p)u + \frac{p m}{1-\delta}}{1-(1-p)\delta} \\
+    \end{aligned}
+\end{equation}
+
+
+This can also be written as,
+
+\begin{equation}
+    \boxed{
+V_P = \frac{u}{1-\delta} + \frac{p(m-u)}{(1-\delta)[1-\delta(1-p)]}
+    }
+\end{equation}
+
+Now, let us consider what happens if agent 1 deviates from the strategy, at time $t=0$, WLG.
+The payoff then becomes $u'$, which is the payoff for the action profile where agent 1 deviates and agent 2 follows the strategy.
+The probability of collapse for that time step becomes $p'$, because in the EcoPG risk of collapse is dependent on the joint action at each time step.
+
+The strategy is SPNE if the payoff from deviation $V_P'$ is less than or equal to the payoff from following the strategy $V_P$.
+
+\begin{equation}
+  V_P = (1-p')(u' + \delta V_P(t=1)) + p'(m + \delta V_D)
+\end{equation}
+$p'$ and $u'$ above can also be written as $p(t=0)$ and $u(t=0)$ respectively
+
+
+
+This represents the cumulative reward for agent 1 due to single step deviation. Note that the logic follows \ref{eq:VP}, with approriate substitutions for the payoff and probability of collapse due to the single step deviation.
+
+
+However, note:
+
+\begin{itemize}
+    \item[a.] $V_P(t=1)$ is the cumulative reward for agent 1 from time step $t=1$ onwards.   Now, if there are no future consequences of the deviation, in terms of what actions agents take in the future (e.g., when they both are playing memory-0 strategies),   then $V_P(t=1)$ will be the same as $V_P$.
+    \item[b.] Consider a strategy like WSLS and assume both cooperate from the beginning. If agent 1 deviates at $t=0$ ($(D,C)$ at $t=0$), agent 1 and agent 2 will defect at $t=1$ ($(D,D)$ at $t=1$).  By $t=2$, both will again cooperate ($(C,C)$ for all $t \geq 2$).
+    \item[c.] consider a strategy like GT and assume both cooperate from the beginning. If agent 1 deviates at $t=0$ ( $(D,C)$ at $t = 0$), then agent 2 will punish at $t=1$ by defecting (joint action $(D,D)$ at t = 1), and both will consequently keep defecting forever ($(D,D) \forall t \geq 2$ ..).
+    \item[d.] In both cases (b) and (c), although the deviation is single step, there are future consequences of the deviation in terms of actions taken by both agents in the future.
+This also affects the probability of collapse as well in the subsequent time steps. In case, (b), the effect is temporary, and at $t=2$, things return to normalcy. 
+But for case (c), the effect is permanent.
+\end{itemize}
+
+
+
+\begin{equation}\label{eq:VP_t1}
+  V_P(t=1) = (1-p(t=1))(u(t=1) + \delta V_P(t=2)) + p(t=1)(m + \delta V_D)
+\end{equation}
+
+\begin{equation}\label{eq:VP_t2}
+  V_P(t=2) = (1-p(t=2))(u(t=2) + \delta V_P(t=2)) + p(t=2)(m + \delta V_D)
+\end{equation}
+
+For memory-0 strategies, $u(t=1) = u(t=2) = u$. Likewise, $p(t=1) = p(t=2)$ and $V_P(t=1) = V_P(t=2)$. 
+In this case, we do not need to compute $V_P(t=1)$ and $V_P(t=2)$ separately, since both are equal to $V_P$.
+
+For WSLS-like strategies, $u(t=1) \neq u(t=0)$, but $u(t=2) = u$. Likewise, $p(t=1)$ may differ, but $p(t=2) = p$, and similarly $V_P(t=2) = V_P$. 
+Thus, we need to compute $V_P(t=1)$ separately, while $V_P(t=2)$ is equal yp  $V_P$.
+
+For GT-like strategies, $u(t=2) \neq u(t=1) = u(t=0)$. Likewise, $p(t=1)$ and $p(t=2)$ differ, and $V_P(t=1)$ and $V_P(t=2)$ are also distinct. 
+Therefore, both $V_P(t=1)$ and $V_P(t=2)$ must be computed separately, and neither equals $V_P$.
+
+As we don't go beyond memory-1 strategies, there is no need to continue this recursion to calculate $V_P$ beyond $t=2$. 
+We only need to calculate $V_P$ at $t=0$, $t=1$, and $t=2$, since $t = 0$ is the deviation step, $t = 1$ is the reaction (if any) which can change $V_P$, 
+and $t = 2$ is the change because of the reaction due to deviation (if any).
+
+After, $t=2$, the action sequence is along their strategy profile given what happened at t = 2, so $V_P(t=3) = V_P(t =2)$.
+
+Now, consider the special case of a strategy lik Tit-for-tat (TFT). Here, while both play the strategy, there is continuous mutual cooperation. However, if there is unilateral 
+defection: at $t =0$, agent 1 defects ${C, D}$, then according to TFT, at $t = 1$, the joint action is ${D, C}$. Then, it's ${C, D}$ at $t = 2$ again leading to a endless 
+alternating between ${C, D}$ and ${D, C}$.
+
+For this case also, we can write an expression for cumulative rewards upon deviation: but we will revisit this again if needed.
+
+
+
+
+
+
+
+\end{document}
