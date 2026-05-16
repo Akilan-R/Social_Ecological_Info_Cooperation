@@ -4,131 +4,214 @@
 \usepackage{amsmath, amssymb}
 \usepackage{setspace}
 \setstretch{1.2}
-\setlength{\parindent}{0pt}
+\setlength{\parindent}{0.5em}
 \setlength{\parskip}{0.5em}
 \usepackage{lmodern}
 \usepackage{amsmath}
 \usepackage{enumitem}
+\usepackage{hyperref}
 
 
 \begin{document}
-\section*{SPNE Check}
 
-First, we write an expression for cumulative reward for the agent assuming both follow their strategy fully
 
-Let, $V_P$ be the cumulative reward for the agent following the strategy. 
-$u$ or more precisely, $u_1(a_1, a_2)$ be the payoff the agent 1 receives, when the action of each agent is $a_1$ and $a_2$ respectively.
-$p$ is the probability of collapse into degraded state. $p$ is also a function of actions of both agents. 
+\title{Evaluating if a strategy pair is SPNE in the EcoPG stochastic game}
+\maketitle
 
-$m$ is the penalty in the degraded state
-$\delta$ be the discount factor.
 
-To derive expression for $V_P$, we can write the following equation,
+\section{Definitions}
+
+To evaluate if a strategy pair is SPNE, we need to check if any agent has an incentive to make a one-step deviation from the strategy and then return 
+to the same strategy, given the other agent is following the strategy. If there is no incentive to deviate for any agent, then the strategy pair is SPNE.
+
+By incentive to deviate, we mean that the cumulative reward for the agent from deviating for a single step and then returning to the strategy is greater 
+than the cumulative reward from following the strategy without deviation.
+
+To estimate the cumulative rewards in either case (i.e., with deviation and without deviation), 
+we write value functions for the agents. 
+
+In the EcoPG, the agents start in the prosperous state, and can transition to the degraded state with a probability dependent on the joint action. 
+Once in the degraded state, they can either stay there or recover back to the prosperous state with some probability again dependent on their joint actions.
+
+To derive the value functions for the prosperous state $V_P$ and the degraded state $V_D$, we can use the Bellman equations.
+
+Let the immediate payoff for the agent in the prosperous state be $u$, and the penalty associated with transitioning (or staying) in the degraded state be $m$.
+ $\gamma$ is the discount factor, $p_c$ is the probability of collapse from the prosperous state to the degraded state, and $p_r$ is the probability of recovery from the degraded state to the prosperous state.
+
+Note that $u$, $p_c$, and $p_r$ are all functions of the joint action of the agents, and hence should be written as $u(a_1, a_2)$, $p_c(a_1, a_2)$, and $p_r(a_1, a_2)$
+ respectively.However, for notational simplicity, we will write them without the arguments in the derivations below.
+
+% V_P definition
+The value function in the prosperous state is
 \begin{equation}
-V_P = (1-p)*(\text{cumulative reward in prosperous state}) + p*(\text{cumulative reward in degraded state})
+\label{eq:VP_def}
+\begin{aligned}
+V_{P} &= \left(1 - p_{c}\right) \left(V_{P} \gamma + u\right) +  p_{c} \left(V_{D} \gamma + m\right)
+\end{aligned}
 \end{equation}
 
-Now, immediate reward in prosperous state is $u$ + discounted cumulative future reward in prosperous state, which is $\delta V_P$. 
-Likewise, immediate reward in degraded state is $m$ + discounted cumulative future reward in degraded state, which is $\delta V_D$.
+Basically, 1 - $p_c$ is the probability of staying in the prosperous state, in which case the immediate payoff is $u$ and the discounted future payoff is $\gamma V_P$.
+$p_c$ is the probability of transitioning to the degraded state, in which case the immediate payoff is $m$ and the discounted future payoff is $\gamma V_D$.
 
-So, we can write,
-
-\begin{equation}\label{eq:VP}
-    V_P = (1-p)(u + \delta V_P) + p(m + \delta V_D)
-\end{equation}
-
-
-$V_D$ is simpler to derive. 
+% V_D definition and rearrangement
+Similarly, the value function in the degraded state is
 \begin{equation}
-    \begin{aligned}
-        V_D = m + \delta V_D
-        \implies V_D = \frac{m}{1-\delta}
-    \end{aligned}
+\label{eq:VD_def}
+\begin{aligned}
+V_{D} &=  m  + \gamma \left(V_{D} \left(1 - p_{r}\right) + V_{P} p_{r}\right) \\
+% V_{D} &= \frac{V_{P} \gamma p_{r} + m}{\gamma p_{r} - \gamma + 1}
+\end{aligned}
 \end{equation}
 
-Substituting the value of $V_D$ in the equation for $V_P$, we get,
+The immediate payoff will always be $m$ in the degraded state, and the future payoff is a weighted average of the payoffs from staying in the degraded state (with probability $1 - p_r$) and recovering to the prosperous state (with probability $p_r$).
 
+Rearraging the above equation, we get an expression for $V_D$ 
 \begin{equation}
-    \begin{aligned}
-        V_P &= (1-p)(u + \delta V_P) + p\left(m + \delta \frac{m}{1-\delta}\right) \\
-        &\implies V_P = (1-p)(u + \delta V_P) + \frac{p m}{1-\delta} \\
-        & \implies V_P - (1-p)\delta V_P = (1-p)u + \frac{p m}{1-\delta} \\
-         &\implies V_P(1-(1-p)\delta) = (1-p)u + \frac{p m}{1-\delta}\\
-         &\implies V_P = \frac{(1-p)u + \frac{p m}{1-\delta}}{1-(1-p)\delta} \\
-    \end{aligned}
+\label{eq:VD_def_rearranged}
+\begin{aligned}
+V_{D} &= \frac{V_{P} \gamma p_{r} + m}{\gamma p_{r} - \gamma + 1}
+\end{aligned}
 \end{equation}
 
 
-This can also be written as,
+Now, \ref{eq:VD_def_rearranged} can be substituted into \ref{eq:VP_def} to get an expression for $V_P$ in terms of the parameters of the model.
+Doing so and simplifying yields
 
 \begin{equation}
-    \boxed{
-V_P = \frac{u}{1-\delta} + \frac{p(m-u)}{(1-\delta)[1-\delta(1-p)]}
-    }
+\label{eq:VP_final}
+\begin{aligned}
+V_{P} &= \left(1 - p_{c}\right) \left(V_{P} \gamma + u\right) + p_{c} \left(\frac{\gamma \left(V_{P} \gamma p_{r} + m\right)}{\gamma p_{r} - \gamma + 1} + m\right) \\
+V_{P} &= \frac{\gamma m p_{c} p_{r} - \gamma p_{c} p_{r} u + \gamma p_{c} u + \gamma p_{r} u - \gamma u + m p_{c} - p_{c} u + u}{- \gamma^{2} p_{c} - \gamma^{2} p_{r} + \gamma^{2} + \gamma p_{c} + \gamma p_{r} - 2 \gamma + 1} \\
+V_{P} &= \frac{m p_{c} \left(1 + \gamma p_{r}\right) + u \left(1 - p_{c}\right) \left(1 - \gamma \left(1 - p_{r}\right)\right)}{\left(1 - \gamma\right) \left(1 + \gamma p_{r} - \gamma \left(1 - p_{c}\right) \right)}
+\end{aligned}
 \end{equation}
 
-Now, let us consider what happens if agent 1 deviates from the strategy, at time $t=0$, WLG.
-The payoff then becomes $u'$, which is the payoff for the action profile where agent 1 deviates and agent 2 follows the strategy.
-The probability of collapse for that time step becomes $p'$, because in the EcoPG risk of collapse is dependent on the joint action at each time step.
-
-The strategy is SPNE if the payoff from deviation $V_P'$ is less than or equal to the payoff from following the strategy $V_P$.
+We will use the last equation in all subsequent steps.
 
 \begin{equation}
-  V_P = (1-p')(u' + \delta V_P(t=1)) + p'(m + \delta V_D)
-\end{equation}
-$p'$ and $u'$ above can also be written as $p(t=0)$ and $u(t=0)$ respectively
-
-
-
-This represents the cumulative reward for agent 1 due to single step deviation. Note that the logic follows \ref{eq:VP}, with approriate substitutions for the payoff and probability of collapse due to the single step deviation.
-
-
-However, note:
-
-\begin{itemize}
-    \item[a.] $V_P(t=1)$ is the cumulative reward for agent 1 from time step $t=1$ onwards.   Now, if there are no future consequences of the deviation, in terms of what actions agents take in the future (e.g., when they both are playing memory-0 strategies),   then $V_P(t=1)$ will be the same as $V_P$.
-    \item[b.] Consider a strategy like WSLS and assume both cooperate from the beginning. If agent 1 deviates at $t=0$ ($(D,C)$ at $t=0$), agent 1 and agent 2 will defect at $t=1$ ($(D,D)$ at $t=1$).  By $t=2$, both will again cooperate ($(C,C)$ for all $t \geq 2$).
-    \item[c.] consider a strategy like GT and assume both cooperate from the beginning. If agent 1 deviates at $t=0$ ( $(D,C)$ at $t = 0$), then agent 2 will punish at $t=1$ by defecting (joint action $(D,D)$ at t = 1), and both will consequently keep defecting forever ($(D,D) \forall t \geq 2$ ..).
-    \item[d.] In both cases (b) and (c), although the deviation is single step, there are future consequences of the deviation in terms of actions taken by both agents in the future.
-This also affects the probability of collapse as well in the subsequent time steps. In case, (b), the effect is temporary, and at $t=2$, things return to normalcy. 
-But for case (c), the effect is permanent.
-\end{itemize}
-
-
-
-\begin{equation}\label{eq:VP_t1}
-  V_P(t=1) = (1-p(t=1))(u(t=1) + \delta V_P(t=2)) + p(t=1)(m + \delta V_D)
+    V_{P} = \frac{m p_{c} \left(1 + \gamma p_{r}\right) + u \left(1 - p_{c}\right) \left(1 - \gamma \left(1 - p_{r}\right)\right)}{\left(1 - \gamma\right) \left(1 - \gamma \left(1 - p_{c}\right) + \gamma p_{r} \right)}
 \end{equation}
 
-\begin{equation}\label{eq:VP_t2}
-  V_P(t=2) = (1-p(t=2))(u(t=2) + \delta V_P(t=2)) + p(t=2)(m + \delta V_D)
+\section{Comparison of Cumulative Rewards with and without Deviation}
+
+Now, we compare the cumulative rewards for the agent from deviating for a single step and then returning to the strategy, 
+with the cumulative reward from following the strategy without deviation.
+
+
+Without deviation, the cumulative reward is simply $V_P$ as derived above.
+
+With deviation, we need to consider the consequences of a single step deviation. Let us say the agent deviates at time step $t=0$. 
+The immediate payoff from deviation is $u^0$, and the probability of collapse due to deviation is $p^0$.
+
+So, the cumulative reward from deviation at $t=0$ can be written as:
+
+\begin{equation}\label{eq:VP_deviation}
+    V_P^{(0)} = (1-p^0)(u^0 + \gamma V_P^{(1)}) + p^0(m + \gamma V_D^{(1)})
 \end{equation}
 
-For memory-0 strategies, $u(t=1) = u(t=2) = u$. Likewise, $p(t=1) = p(t=2)$ and $V_P(t=1) = V_P(t=2)$. 
-In this case, we do not need to compute $V_P(t=1)$ and $V_P(t=2)$ separately, since both are equal to $V_P$.
+In \ref{eq:VP_deviation}, $V_P^{(1)}$ is the cumulative reward from time step $t=1$ onwards, given that the agent deviated at $t=0$ and then returned to the strategy.
+Likewise, $V_D^{(1)}$ is the cumulative reward from time step $t=1$ onwards in the degraded state, given that the agent deviated at $t=0$ and then returned to the strategy.
+The above equation is the general form of the SPNE equation
+Thus, if a strategy is SPNE, then the following condition must hold:
 
-For WSLS-like strategies, $u(t=1) \neq u(t=0)$, but $u(t=2) = u$. Likewise, $p(t=1)$ may differ, but $p(t=2) = p$, and similarly $V_P(t=2) = V_P$. 
-Thus, we need to compute $V_P(t=1)$ separately, while $V_P(t=2)$ is equal yp  $V_P$.
+\begin{equation}\label{eq:SPNE_inequality}
+    V_P^{(0)} \leq V_P 
+\end{equation}
 
-For GT-like strategies, $u(t=2) \neq u(t=1) = u(t=0)$. Likewise, $p(t=1)$ and $p(t=2)$ differ, and $V_P(t=1)$ and $V_P(t=2)$ are also distinct. 
-Therefore, both $V_P(t=1)$ and $V_P(t=2)$ must be computed separately, and neither equals $V_P$.
+\begin{equation}
+\boxed{
+(1-p^{(0)})(u^0 + \gamma V_P^{(1)}) + p^{(0)}(m + \gamma V_D^{(1)})
+\leq
+\frac{m p_{c} \left(1 + \gamma p_{r}\right) + u \left(1 - p_{c}\right) \left(1 - \gamma \left(1 - p_{r}\right)\right)}
+{\left(1 - \gamma\right) \left(1 + \gamma p_{r} - \gamma \left(1 - p_{c}\right) \right)}
+}
+\end{equation}
 
-As we don't go beyond memory-1 strategies, there is no need to continue this recursion to calculate $V_P$ beyond $t=2$. 
-We only need to calculate $V_P$ at $t=0$, $t=1$, and $t=2$, since $t = 0$ is the deviation step, $t = 1$ is the reaction (if any) which can change $V_P$, 
-and $t = 2$ is the change because of the reaction due to deviation (if any).
+\subsection{SPNE inequality in different info conditions}
 
-After, $t=2$, the action sequence is along their strategy profile given what happened at t = 2, so $V_P(t=3) = V_P(t =2)$.
+We look at how how $V_P^{(0)}$ differs across the different information conditions.
 
-Now, consider the special case of a strategy lik Tit-for-tat (TFT). Here, while both play the strategy, there is continuous mutual cooperation. However, if there is unilateral 
-defection: at $t =0$, agent 1 defects ${C, D}$, then according to TFT, at $t = 1$, the joint action is ${D, C}$. Then, it's ${C, D}$ at $t = 2$ again leading to a endless 
-alternating between ${C, D}$ and ${D, C}$.
+\subsubsection{Only Ecological Information: }
 
-For this case also, we can write an expression for cumulative rewards upon deviation: but we will revisit this again if needed.
+Under the only ecological information condition, the agents can distinguish betweeen the prosperous and dedgraded states, but they play memory-0 strategies.
+So, a one step deviation will affect only the payoff and the probability of collapse at $t=0$, but this effect does not carry on the future steps.
+
+So, we can write the cumulative reward from deviation as:
+\begin{equation}
+    V_P^{(0)} = (1-p^{(0)})(u^0 + \gamma V_P) + p^{(0)}(m + \gamma V_D) 
+\end{equation}
+
+This is simply \ref{eq:VP_deviation} with $V_P^{1} = V_P$ and $V_D^{1} = V_D$.
+
+\subsubsection{Complete Information}:
+
+If agents play memory-1 strategies in addition to having to knowledge of the ecological state, 
+then a one step deviation can have consequences beyond just the time-step in which the deviation occurs.
+
+For example, consider a strategy like WSLS. If both agents are playing WSLS and cooperating from the beginning, then if one agent deviates at $t=0$ by defecting, then at $t=1$, both agents will defect.
+However, at $t=2$, both agents will again cooperate. So, the effect of deviation lasts for one more time step after the deviation step. 
+So, we need to compute $V_P^{1}$ and $V_D^{1}$ separately, since they will differ from $V_P$ and $V_D$ respectively. But $V_P^{2}$ and $V_D^{2}$ will be the same as $V_P$ and $V_D$ respectively, since after $t=2$, the effect of deviation is gone and both agents are back to cooperating.
+
+\begin{equation}\label{V_P_deviation_with_t_1}
+\begin{aligned}
+    V_{P}^{(0)} &= \left(1 - p_{c}^{(0)}\right)\left( u + \gamma V_{P}^{(1)} \right) 
+    + p_{c}^{(0)}\left( m + \gamma V_{D}^{(1)} \right)
+\end{aligned}
+\end{equation}
+
+\begin{equation}\label{V_P_from_t_1_onwards}
+\begin{aligned}
+    V_{P}^{(1)} &= \left(1 - p_{c}^{(1)}\right)\left( u + \gamma V_{P}^{(1)} \right) 
+    + p_{c}^{(1)}\left( m + \gamma V_{D}^{(1)} \right)\\
+    V_{D}^{(1)} &=  m + \gamma \left( (1 - p_{r}^{(1)}) V_{D}^{(1)} + p_{r}^{(1)} V_{P}^{(1)} \right)
+\end{aligned}
+\end{equation}
 
 
+
+If needed in GT like strategies, the effect of deviation can be permanent, and the agents that initially cooperated keep defecting forever after the deviation. In this case,
+we need to compute $V_P^{(2)}$ and $V_D^{(2)}$ separately as well. However, after $t=2$, the effect of deviation is permanent, so $V_P^{(3)} = V_P^{(2)}$ and $V_D^{(3)} = V_D^{(2)}$.
+
+
+\begin{equation}
+\begin{aligned}
+    V_{P}^{(0)} &= \left(1 - p_{c}^{(0)}\right)\left( u + \gamma V_{P}^{(1)} \right) 
+    + p_{c}^{(0)}\left( m + \gamma V_{D}^{(1)} \right)
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+    V_{P}^{(1)} &= \left(1 - p_{c}^{(1)}\right)\left( u + \gamma V_{P}^{(1)} \right) 
+    + p_{c}^{(1)}\left( m + \gamma V_{D}^{(1)} \right)\\
+    V_{D}^{(1)} &=  m + \gamma \left( (1 - p_{r}^{(1)}) V_{D}^{(1)} + p_{r}^{(1)} V_{P}^{(1)} \right)
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+    V_{P}^{(2)} &= \left(1 - p_{c}^{(2)}\right)\left( u + \gamma V_{P}^{(2)} \right) 
+    + p_{c}^{(2)}\left( m + \gamma V_{D}^{(2)} \right)\\
+    V_{D}^{(2)} &=  m + \gamma \left( (1 - p_{r}^{(2)}) V_{D}^{(2)} + p_{r}^{(2)} V_{P}^{(2)} \right)
+\end{aligned}
+\end{equation}
+
+
+\subsubsection{No Information}
+
+Under the no information condition, the agents cannot distinguish between the prosperous and degraded states. 
+So, from the POV of the agents, there is no $V_P$ and $V_D$, but a single value function $V_{\text{no info}}$ which is the same for both states.
+
+\textbf{WORK IN PROGRESS}
+
+\subsubsection{Only Social Information}
+
+\textbf{WORK IN PROGRESS}
 
 
 
 
 
 \end{document}
+
+
